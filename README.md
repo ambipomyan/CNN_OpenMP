@@ -7,3 +7,7 @@ make
 export LD_LIBRARY_PATH=/opt/llvm/llvm-14.x-install/lib:$LD_LIBRARY_PATH
 make run
 ```
+
+#### TODOS:
+- reduce redundant data copy
+- optimize matrix multiplication
