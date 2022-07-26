@@ -5,4 +5,4 @@ run:
 	./main 2000 50 20 50 1
 
 clean:
-	rm -rf main
+	rm -rf main weights
