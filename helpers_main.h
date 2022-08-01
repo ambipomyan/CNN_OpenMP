@@ -12,4 +12,4 @@ void forward_softmax_layer(               LAYER *layer, float *input, float *out
 
 float compute_loss_function(LAYER *layer, float *network_truth, int training_volume, int training_epoch);
 
-
+void backward_softmax_layer(LAYER *layer,               float *delta_in, float *delta_out  );

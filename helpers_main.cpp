@@ -169,4 +169,9 @@ float compute_loss_function(LAYER *layer, float *network_truth, int training_vol
 
 /****** backward ******/
 
+void backward_softmax_layer(LAYER *layer, float *delta_in, float *delta_out) {
+    int N = layer->inputs;
 
+    //axpy
+    softmax_backward(layer->batch, N, delta_in, delta_out);
+}

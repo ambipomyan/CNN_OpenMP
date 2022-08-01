@@ -642,12 +642,8 @@ int main (int argc, char **argv) {
     // connect3 shape
     int K6 = network->layers[6]->inputs;
     int N6 = network->layers[6]->outputs;
-
-
-    // softmax shape
-    int N7 = network->layers[7]->inputs;
-
     
+
     // model
     int HWC_conv1_weights = network->layers[0]->n*network->layers[0]->size*network->layers[0]->size*network->layers[0]->c;
     int HWC_conv2_weights = network->layers[2]->n*network->layers[2]->size*network->layers[2]->size*network->layers[2]->c;
@@ -821,10 +817,9 @@ int main (int argc, char **argv) {
             // if i = 0, network->input = network->layers[0]->output
             //
 	    tmp = read_timer_ms();
-	    
-	    //axpy
-	    softmax_backward(network->layers[7]->batch, N7, network->layers[7]->delta, network->layers[6]->delta);
             
+            backward_softmax_layer(network->layers[7], network->layers[7]->delta, network->layers[6]->delta);
+
 	    time_softmax_2 += read_timer_ms() - tmp;
             printf("softmax  backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax_2);
 	    
