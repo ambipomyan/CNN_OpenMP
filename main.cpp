@@ -808,50 +808,7 @@ int main (int argc, char **argv) {
             printf("forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_forward);
 
 // COST 
-            // update cost
-            for(int i = 0; i < network->layers[7]->batch*N7; i++) {
-                int truth_index = i;
-                /*
-                // check truth
-                if (i%N == 0) {
-                    printf("input#%d: \n", i/N);
-                    for (int j = 0; j < 28*28; j++) {
-                        if (j%28==0) printf("\n");
-                        printf("%.2f ", network->input[i/N+j]);
-                    }
-                    printf("\n");
-                }
-                printf("%f ", network->truth[truth_index]);
-                if ((i-N+1)%N == 0) printf("\n");
-                 */
-                float t = network->truth[truth_index];
-                //printf("t: %f\n", t);
-                float p = network->layers[7]->output[i];
-                //printf("p: %f\n", p);
-                // loss
-                if (t) {
-                    network->layers[7]->loss[i] = -log(p);
-                } else {
-                    network->layers[7]->loss[i] = 0;
-                }
-                //printf("-logp: %f\n", network->layers[7]->loss[i]);
-                network->layers[7]->delta[i] = t-p;
-                //printf("t-p: %f\n", network->layers[7]->delta[i]);
-            }
-            
-            float sum_cost = 0;
-            for (int i = 0; i < network->layers[7]->batch*N7; i++) {
-                sum_cost += network->layers[7]->loss[i];
-                //printf("%f\n", network->layers[7]->loss[i]);
-            }
-            network->layers[7]->cost = sum_cost;
-            //printf("%f\n", network->layers[7]->cost);
-            
-            //printf("network->input size: %d\n", network->layers[7]->batch*network->layers[7]->outputs);
-
-            // calc network cost
-            network->cost = network->layers[7]->cost/(img_n*training_epoch);
-
+            network->cost = compute_loss_function(network->layers[7], network->truth, training_volume, training_epoch);
 
 // BACKWARD
 	    tmp_backward = read_timer_ms();

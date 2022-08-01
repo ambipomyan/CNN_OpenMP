@@ -8,6 +8,8 @@
 #include "helpers_main.h"
 
 
+/****** forward ******/
+
 void forward_convolutional_layer(LAYER *layer, float *input, float *output, int Op) {
     // shape
     //int n;
@@ -120,3 +122,51 @@ void forward_softmax_layer(LAYER *layer, float *input, float *output) {
     softmax(layer->batch, N, input, output);
 
 }
+
+
+/****** loss function ******/
+
+float compute_loss_function(LAYER *layer, float *network_truth, int training_volume, int training_epoch) {
+    int N = layer->batch*layer->inputs;
+
+    // update cost
+    for(int i = 0; i < N; i++) {
+        int truth_index = i;
+        
+	float t = network_truth[truth_index];
+        //printf("t: %f\n", t);
+        float p = layer->output[i];
+        //printf("p: %f\n", p);
+        // loss
+        if (t) {
+            layer->loss[i] = -log(p);
+        } else {
+            layer->loss[i] = 0;
+        }
+        //printf("-logp: %f\n", network->layers[7]->loss[i]);
+        layer->delta[i] = t-p;
+        //printf("t-p: %f\n", network->layers[7]->delta[i]);
+    }
+
+    float sum_cost = 0;
+    for (int i = 0; i < N; i++) {
+        sum_cost += layer->loss[i];
+        //printf("%f\n", network->layers[7]->loss[i]);
+    }
+
+    layer->cost = sum_cost;
+    //printf("%f\n", network->layers[7]->cost);
+
+    //printf("network->input size: %d\n", network->layers[7]->batch*network->layers[7]->outputs);
+
+    // calc network cost
+    float network_cost = layer->cost/(training_volume*training_epoch);
+
+    return network_cost; 
+
+}
+
+
+/****** backward ******/
+
+
