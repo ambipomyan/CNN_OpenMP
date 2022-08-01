@@ -14,7 +14,6 @@
 
 #include "helpers_main.h"
 
-
 using namespace cv;
 
 float rand_uniform(float min, float max);
@@ -711,40 +710,8 @@ int main (int argc, char **argv) {
 
             //printf("- forward  conv1    -\n");
 	    tmp = read_timer_ms();
-/*
-            // init
-	    n = network->layers[0]->outputs*network->layers[0]->batch;
-	    for (int i = 0; i < n; i++) network->layers[0]->delta[i] = 0;
-            for (int i = 0; i < n; i++) network->layers[0]->output[i] = 0;
-
-	    // inputs:
-            //
-            // M, K, N
-            // batch            [network->layers[0]->batch]
-            // channels_col
-            // height_col
-            // width_col
-            // ksize
-            // stride
-            // channels
-            // height
-            // width
-            // pad
-            // *input           [network->input]
-            // *output          [network->layers[0]->output]
-            // *weights         [network->layers[0]->weights]
-            // *T               tensor, device-only data
-
-	    // conv
-	    conv(network->layers[0]->batch, M0, K0, N0, channels_col0, height_col0, width_col0, ksize0, stride0, channels0, height0, width0, pad0, network->input, network->layers[0]->output, network->layers[0]->weights);
-
-            // add bias
-	    bias(network->layers[0]->batch, M0, N0, network->layers[0]->output, network->layers[0]->biases);
-
-	    // relu
-            relu(network->layers[0]->batch, M0, N0, network->layers[0]->output);
- */
-            forward_convolutional_layer(network->layers[0], network->input, network->layers[0]->output);
+            
+	    forward_convolutional_layer(network->layers[0], network->input, network->layers[0]->output, 1);
 
 	    time_conv1 += read_timer_ms() - tmp;
 	    printf("conv1    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1);
@@ -754,13 +721,8 @@ int main (int argc, char **argv) {
             //printf("- forward  pool1    -\n");
 	    tmp = read_timer_ms();
 	    
-	    // init
-	    n = network->layers[1]->outputs*network->layers[1]->batch;
-            for (int i = 0; i < n; i++) network->layers[1]->delta[i] = 0;
+	    forward_pooling_layer(network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1);
 
-	    // max pooling
-	    max_pool(network->layers[1]->batch, height_out1, width_out1, ksize1, stride1, channels1, height1, width1, pad1, network->layers[0]->output, network->layers[1]->output, network->layers[1]->indexes); 
-            
 	    time_pool1 += read_timer_ms() - tmp;
             printf("maxpool1 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool1);
 
@@ -782,22 +744,8 @@ int main (int argc, char **argv) {
 
             //printf("- forward  conv2    -\n");
             tmp = read_timer_ms();
-/*
-	    // init
-	    n = network->layers[2]->outputs*network->layers[2]->batch;
-            for (int i = 0; i < n; i++) network->layers[2]->delta[i] = 0;
-            for (int i = 0; i < n; i++) network->layers[2]->output[i] = 0;
 	    
-	    // conv
-	    conv(network->layers[2]->batch, M2, K2, N2, channels_col2, height_col2, width_col2, ksize2, stride2, channels2, height2, width2, pad2, network->layers[1]->output, network->layers[2]->output, network->layers[2]->weights);
-
-            // add bias
-	    bias(network->layers[2]->batch, M2, N2, network->layers[2]->output, network->layers[2]->biases);
-            
-	    // relu
-	    relu(network->layers[2]->batch, M2, N2, network->layers[2]->output);
- */
-	    forward_convolutional_layer(network->layers[2], network->layers[1]->output, network->layers[2]->output);
+	    forward_convolutional_layer(network->layers[2], network->layers[1]->output, network->layers[2]->output, 1);
 
 	    time_conv2 += read_timer_ms() - tmp;
             printf("conv2    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2);
@@ -811,12 +759,7 @@ int main (int argc, char **argv) {
 	    //printf("- forward  pool2    -\n");
 	    tmp = read_timer_ms();
 	    
-	    // init
-	    n = network->layers[3]->outputs*network->layers[3]->batch;
-            for (int i = 0; i < n; i++) network->layers[3]->delta[i] = 0;
-
-            //max pooling
-            max_pool(network->layers[3]->batch, height_out3, width_out3, ksize3, stride3, channels3, height3, width3, pad3, network->layers[2]->output, network->layers[3]->output, network->layers[3]->indexes);
+            forward_pooling_layer(network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1);
 
             time_pool2 += read_timer_ms() - tmp;
             printf("maxpool2 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool2);
@@ -826,60 +769,27 @@ int main (int argc, char **argv) {
             //printf("- forward  connect1 -\n");
 	    tmp = read_timer_ms();
 	    
-	    // init
-	    n = network->layers[4]->outputs*network->layers[4]->batch;
-            for (int i = 0; i < n; i++) network->layers[4]->delta[i] = 0;
-            for (int i = 0; i < n; i++) network->layers[4]->output[i] = 0;
+	    forward_connected_layer(network->layers[4], network->layers[3]->output, network->layers[4]->output, 1);
 
-            // connected
-            connect(network->layers[4]->batch, K4, N4, network->layers[3]->output, network->layers[4]->output, network->layers[4]->weights);
-            
-	    // add bias
-            bias(network->layers[4]->batch, 1, N4, network->layers[4]->output, network->layers[4]->biases);
-            
-	    // relu
-	    relu(network->layers[4]->batch, 1, N4, network->layers[4]->output); 
-            //printf("network->input size: %d\n", network->layers[4]->batch*network->layers[4]->outputs);
+	    //printf("network->input size: %d\n", network->layers[4]->batch*network->layers[4]->outputs);
             
 	    time_connect1 += read_timer_ms() - tmp;
             printf("connect1 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect1);
 
             //printf("- forward  connect2 -\n");
 	    tmp = read_timer_ms();
-	    
-	    // init 
-	    n = network->layers[5]->outputs*network->layers[5]->batch;
-            for (int i = 0; i < n; i++) network->layers[5]->delta[i] = 0;
-            for (int i = 0; i < n; i++) network->layers[5]->output[i] = 0;
 
-            // connected
-            connect(network->layers[5]->batch, K5, N5, network->layers[4]->output, network->layers[5]->output, network->layers[5]->weights);
-            
-	    // add bias
-            bias(network->layers[5]->batch, 1, N5, network->layers[5]->output, network->layers[5]->biases);
-            
-	    // relu
-	    relu(network->layers[5]->batch, 1, N5, network->layers[5]->output); 
-            //printf("network->input size: %d\n", network->layers[5]->batch*network->layers[5]->outputs);
+            forward_connected_layer(network->layers[5], network->layers[4]->output, network->layers[5]->output, 1);
+	    
+	    //printf("network->input size: %d\n", network->layers[5]->batch*network->layers[5]->outputs);
             
 	    time_connect2 += read_timer_ms() - tmp;
             printf("connect2 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect2);
 
             //printf("- forward  connect3 -\n");
 	    tmp = read_timer_ms();
-	    
-	    // init
-	    n = network->layers[6]->outputs*network->layers[6]->batch;
-            for (int i = 0; i < n; i++) network->layers[6]->delta[i] = 0;
-            for (int i = 0; i < n; i++) network->layers[6]->output[i] = 0;
 
-            // connected
-            connect(network->layers[6]->batch, K6, N6, network->layers[5]->output, network->layers[6]->output, network->layers[6]->weights);
-	    
-	    // add bias
-	    bias(network->layers[6]->batch, 1, N6, network->layers[6]->output, network->layers[6]->biases);
-
-	    // no reLU
+	    forward_connected_layer(network->layers[6], network->layers[5]->output, network->layers[6]->output, 0);
 
 	    time_connect3 += read_timer_ms() - tmp;
             printf("connect3 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3);
@@ -888,13 +798,8 @@ int main (int argc, char **argv) {
 
             //printf("- forward  softmax  -\n");
 	    tmp = read_timer_ms();
-	   
-	    // init 
-	    n = network->layers[7]->outputs*network->layers[7]->batch;
-            for (int i = 0; i < n; i++) network->layers[7]->delta[i] = 0;
 
-            //printf("N: %d\n", N);
-	    softmax(network->layers[7]->batch, N7, network->layers[6]->output, network->layers[7]->output);
+	    forward_softmax_layer(network->layers[7], network->layers[6]->output, network->layers[7]->output);
 
 	    time_softmax += read_timer_ms() - tmp;
             printf("softmax  forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax);
