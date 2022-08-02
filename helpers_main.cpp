@@ -57,6 +57,7 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
     // *output          [network->layers[0]->output]
     // *weights         [network->layers[0]->weights]
     // *T               tensor, device-only data
+
 #pragma omp target data map(tofrom:output[0:n])
     {
     // conv
@@ -68,6 +69,7 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
     // relu
     if (Op != 0) relu(layer->batch, M, N, output);
     }
+
 }
 
 
@@ -103,6 +105,8 @@ void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *o
     for (int i = 0; i < n; i++) layer->delta[i] = 0;
     for (int i = 0; i < n; i++) layer->output[i] = 0;
 
+#pragma omp target data map(tofrom:output[0:n])
+    {
     // connected
     connect(layer->batch, K, N, input, output, layer->weights);
 
@@ -111,6 +115,7 @@ void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *o
     
     // relu
     if (Op != 0) relu(layer->batch, 1, N, output);
+    }
 
 }
 
@@ -183,10 +188,15 @@ void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, floa
     int K = layer->inputs;
     int N = layer->outputs;
 
+    int n_in  = layer->batch*N;
+    int n_out = layer->batch*K;
+
     // init
     for(int i = 0; i < N; i++) layer->bias_updates[i] = 0;
     for(int i = 0; i < N*K; i++) layer->weight_updates[i] = 0;
-            
+
+#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
+    {
     // gradient array
     if (Op != 0) relu_backward(layer->batch, N, layer->output, delta_in);
 
@@ -195,6 +205,7 @@ void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, floa
             
     // backward connected
     connect_backward(layer->batch, K, N, delta_in, layer_->output, layer->weight_updates, layer->weights, delta_out);
+    }
 
 }
 
@@ -231,11 +242,16 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
     int height_col   = (height+2*pad-ksize)/stride+1;
     int width_col    = (width+2*pad-ksize)/stride+1;
     int channels_col = channels*ksize*ksize;
-	
+
+    int n_in  = layer->batch*M*N;
+    int n_out = layer->batch*height*width*channels;
+
     // init 
     for(int i = 0; i < M; i++) layer->bias_updates[i] = 0;
     for(int i = 0; i < K*M; i++) layer->weight_updates[i] = 0;
-    
+
+#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
+    {
     // gradient array
     if (Op != 0) relu_backward(layer->batch, N*M, layer->output, delta_in);
             
@@ -244,5 +260,6 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
 
     // conv backward
     conv_backward(layer->batch, K, N, M, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, layer_->output, delta_in, layer->weight_updates, delta_out, layer->weights);
+    }
 
 }
