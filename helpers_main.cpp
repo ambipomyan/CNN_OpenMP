@@ -57,7 +57,8 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
     // *output          [network->layers[0]->output]
     // *weights         [network->layers[0]->weights]
     // *T               tensor, device-only data
-
+#pragma omp target data map(tofrom:output[0:n])
+    {
     // conv
     conv(layer->batch, M, K, N, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, input, output, layer->weights);
 
@@ -66,7 +67,7 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
 
     // relu
     if (Op != 0) relu(layer->batch, M, N, output);
-
+    }
 }
 
 
