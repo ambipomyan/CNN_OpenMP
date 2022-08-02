@@ -5,6 +5,8 @@
 #include <sys/timeb.h>
 #include <float.h>
 
+#include "omp.h"
+
 #include "helpers_main.h"
 
 
