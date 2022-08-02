@@ -560,90 +560,6 @@ int main (int argc, char **argv) {
     // if there is only one device, then this part is of serial processing
     printf("number of devices:%d\n", num_dev);
 
-    // shape
-    //int n;
-    //int N, M, K;
-    //int height, width, channels, ksize, stride, pad, height_col, width_col, channels_col;
-
-    // conv1 shape
-    int M0 = network->layers[0]->n;
-    int K0 = network->layers[0]->size * network->layers[0]->size * network->layers[0]->c;
-    int N0 = network->layers[0]->out_w * network->layers[0]->out_h;
-            
-    int height0   = network->layers[0]->h;
-    int width0    = network->layers[0]->w;
-    int channels0 = network->layers[0]->c;
-    int ksize0    = network->layers[0]->size;
-    int stride0   = network->layers[0]->stride;
-    int pad0      = network->layers[0]->padding;
-            
-    int height_col0   = (height0+2*pad0-ksize0)/stride0+1;
-    int width_col0    = (width0+2*pad0-ksize0)/stride0+1;
-    int channels_col0 = channels0*ksize0*ksize0;
-
-
-    // pool1 shape
-    int N1 = network->layers[1]->out_h*network->layers[1]->out_w*network->layers[1]->out_c;
-    int M1 = network->layers[0]->out_h*network->layers[0]->out_w*network->layers[0]->out_c;	    
-
-    int height1     = network->layers[1]->h;
-    int width1      = network->layers[1]->w;
-    int channels1   = network->layers[1]->c;
-    int ksize1      = network->layers[1]->size;
-    int stride1     = network->layers[1]->stride;
-    int pad1        = network->layers[1]->padding;
-
-    int height_out1   = network->layers[1]->out_h;
-    int width_out1    = network->layers[1]->out_w;
-   
-
-    // conv2 shape
-    int M2 = network->layers[2]->n;
-    int K2 = network->layers[2]->size*network->layers[2]->size*network->layers[2]->c;
-    int N2 = network->layers[2]->out_w*network->layers[2]->out_h;
-
-    int height2   = network->layers[2]->h;
-    int width2    = network->layers[2]->w;
-    int channels2 = network->layers[2]->c;
-    int ksize2    = network->layers[2]->size;
-    int stride2   = network->layers[2]->stride;
-    int pad2      = network->layers[2]->padding;
-
-    int height_col2   = (height2+2*pad2-ksize2)/stride2+1;
-    int width_col2    = (width2+2*pad2-ksize2)/stride2+1;
-    int channels_col2 = channels2*ksize2*ksize2;
-
-
-    // pool2 shape
-    int N3 = network->layers[3]->out_h*network->layers[3]->out_w*network->layers[3]->out_c;
-    int M3 = network->layers[2]->out_h*network->layers[2]->out_w*network->layers[2]->out_c;
-
-    int height3     = network->layers[3]->h;
-    int width3      = network->layers[3]->w;
-    int channels3   = network->layers[3]->c;
-    int ksize3      = network->layers[3]->size;
-    int stride3     = network->layers[3]->stride;
-    int pad3        = network->layers[3]->padding;
-
-    int height_out3   = network->layers[3]->out_h;
-    int width_out3    = network->layers[3]->out_w;
-
-
-    // connect1 shape
-    int K4 = network->layers[4]->inputs;
-    int N4 = network->layers[4]->outputs;
-	    
-
-    // connect2 shape
-    int K5 = network->layers[5]->inputs;
-    int N5 = network->layers[5]->outputs;
-
-
-    // connect3 shape
-    int K6 = network->layers[6]->inputs;
-    int N6 = network->layers[6]->outputs;
-    
-
     // model
     int HWC_conv1_weights = network->layers[0]->n*network->layers[0]->size*network->layers[0]->size*network->layers[0]->c;
     int HWC_conv2_weights = network->layers[2]->n*network->layers[2]->size*network->layers[2]->size*network->layers[2]->c;
@@ -707,7 +623,7 @@ int main (int argc, char **argv) {
             //printf("- forward  conv1    -\n");
 	    tmp = read_timer_ms();
             
-	    forward_convolutional_layer(network->layers[0], network->input, network->layers[0]->output, 1);
+	    forward_convolutional_layer(network->layers[0], network->layers[0], network->input, network->layers[0]->output, 1);
 
 	    time_conv1 += read_timer_ms() - tmp;
 	    printf("conv1    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1);
@@ -741,7 +657,7 @@ int main (int argc, char **argv) {
             //printf("- forward  conv2    -\n");
             tmp = read_timer_ms();
 	    
-	    forward_convolutional_layer(network->layers[2], network->layers[1]->output, network->layers[2]->output, 1);
+	    forward_convolutional_layer(network->layers[1], network->layers[2], network->layers[1]->output, network->layers[2]->output, 1);
 
 	    time_conv2 += read_timer_ms() - tmp;
             printf("conv2    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2);
@@ -765,7 +681,7 @@ int main (int argc, char **argv) {
             //printf("- forward  connect1 -\n");
 	    tmp = read_timer_ms();
 	    
-	    forward_connected_layer(network->layers[4], network->layers[3]->output, network->layers[4]->output, 1);
+	    forward_connected_layer(network->layers[3], network->layers[4], network->layers[3]->output, network->layers[4]->output, 1);
 
 	    //printf("network->input size: %d\n", network->layers[4]->batch*network->layers[4]->outputs);
             
@@ -775,7 +691,7 @@ int main (int argc, char **argv) {
             //printf("- forward  connect2 -\n");
 	    tmp = read_timer_ms();
 
-            forward_connected_layer(network->layers[5], network->layers[4]->output, network->layers[5]->output, 1);
+            forward_connected_layer(network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1);
 	    
 	    //printf("network->input size: %d\n", network->layers[5]->batch*network->layers[5]->outputs);
             
@@ -785,7 +701,7 @@ int main (int argc, char **argv) {
             //printf("- forward  connect3 -\n");
 	    tmp = read_timer_ms();
 
-	    forward_connected_layer(network->layers[6], network->layers[5]->output, network->layers[6]->output, 0);
+	    forward_connected_layer(network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0);
 
 	    time_connect3 += read_timer_ms() - tmp;
             printf("connect3 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3);
@@ -795,7 +711,7 @@ int main (int argc, char **argv) {
             //printf("- forward  softmax  -\n");
 	    tmp = read_timer_ms();
 
-	    forward_softmax_layer(network->layers[7], network->layers[6]->output, network->layers[7]->output);
+	    forward_softmax_layer(network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output);
 
 	    time_softmax += read_timer_ms() - tmp;
             printf("softmax  forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax);
@@ -818,156 +734,64 @@ int main (int argc, char **argv) {
             //
 	    tmp = read_timer_ms();
             
-            backward_softmax_layer(network->layers[7], network->layers[7]->delta, network->layers[6]->delta);
+            backward_softmax_layer(network->layers[7], network->layers[6], network->layers[7]->delta, network->layers[6]->delta);
 
 	    time_softmax_2 += read_timer_ms() - tmp;
             printf("softmax  backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax_2);
 	    
 	    //printf("- backward connect3 -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //
 	    tmp = read_timer_ms();
 
-            // init
-	    for(int i = 0; i < N6; i++) network->layers[6]->bias_updates[i] = 0;
-            for(int i = 0; i < N6*K6; i++) network->layers[6]->weight_updates[i] = 0;
-            /*
-            // gradient array
-            n = network->layers[6]->batch*N6;
-            for(int i = 0; i < n; i++) {network->layers[6]->delta[i] *= (network->layers[6]->output[i]>0);}
-             */
+            backward_connected_layer(network->layers[6], network->layers[5], network->layers[6]->delta, network->layers[5]->delta, 0);
 
-            // backward array
-	    bias_backward(network->layers[6]->batch, 1, N6, network->layers[6]->delta, network->layers[6]->bias_updates);
-
-            // backward connected
-	    connect_backward(network->layers[6]->batch, K6, N6, network->layers[6]->delta, network->layers[5]->output, network->layers[6]->weight_updates, network->layers[6]->weights, network->layers[5]->delta);
-            
 	    time_connect3_2 += read_timer_ms() - tmp;
             printf("connect3 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3_2);
 
 	    //printf("- backward connect2 -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //
-            //M = network->layers[5]->outputs;
-            //N = network->layers[5]->inputs;
-            //
 	    tmp = read_timer_ms();
 
-            // init
-	    for(int i = 0; i < N5; i++) network->layers[5]->bias_updates[i] = 0;
-            for(int i = 0; i < N5*K5; i++) network->layers[5]->weight_updates[i] = 0;
-            
-            // gradient array
-            relu_backward(network->layers[5]->batch, N5, network->layers[5]->output, network->layers[5]->delta);
-
-	    // backward array
-            bias_backward(network->layers[5]->batch, 1, N5, network->layers[5]->delta, network->layers[5]->bias_updates);
-            
-	    // backward connected
-	    connect_backward(network->layers[5]->batch, K5, N5, network->layers[5]->delta, network->layers[4]->output, network->layers[5]->weight_updates, network->layers[5]->weights, network->layers[4]->delta);
+            backward_connected_layer(network->layers[5], network->layers[4], network->layers[5]->delta, network->layers[4]->delta, 1);
 
 	    time_connect2_2 += read_timer_ms() - tmp;
             printf("connect2 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect2_2);
             
 	    //printf("- backward connect1 -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //
 	    tmp = read_timer_ms();
-           
-	    // init 
-            for(int i = 0; i < N4; i++) network->layers[4]->bias_updates[i] = 0;
-            for(int i = 0; i < N4*K4; i++) network->layers[4]->weight_updates[i] = 0;
-            
-	    // gradient array
-            relu_backward(network->layers[4]->batch, N4, network->layers[4]->output, network->layers[4]->delta);
-	    
-	    // backward array
-            bias_backward(network->layers[4]->batch, 1, N4, network->layers[4]->delta, network->layers[4]->bias_updates);
-            
-	    // backward connected
-	    connect_backward(network->layers[4]->batch, K4, N4, network->layers[4]->delta, network->layers[3]->output, network->layers[4]->weight_updates, network->layers[4]->weights, network->layers[3]->delta);
+
+            backward_connected_layer(network->layers[4], network->layers[3], network->layers[4]->delta, network->layers[3]->delta, 1);
+
             time_connect1_2 += read_timer_ms() - tmp;
             printf("connect1 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect1_2);
 
 	    //printf("- backward pool2    -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //
 	    tmp = read_timer_ms();
-	    
-	    // maxpool backward
-	    max_pool_backward(network->layers[3]->batch, N3, M3, height_out3, width_out3, ksize3, stride3, channels3, height3, width3, pad3, network->layers[3]->indexes, network->layers[3]->delta, network->layers[2]->delta, network->layers[3]->output, network->layers[2]->output);
             
+	    backward_pooling_layer(network->layers[3], network->layers[2], network->layers[3]->delta, network->layers[2]->delta, 1);
+
 	    time_pool2_2 += read_timer_ms() - tmp;
             printf("pool2    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool2_2);
  
 	    //printf("- backward conv2    -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //
-            //l = network->layers[2]->
-            //
 	    tmp = read_timer_ms();
 
-	    // init 
-            for(int i = 0; i < M2; i++) network->layers[2]->bias_updates[i] = 0;
-            for(int i = 0; i < K2*M2; i++) network->layers[2]->weight_updates[i] = 0;
-            
-	    // gradient array
-	    relu_backward(network->layers[2]->batch, N2*M2, network->layers[2]->output, network->layers[2]->delta);
-            
-	    // backward bias
-            bias_backward(network->layers[2]->batch, N2, M2, network->layers[2]->delta, network->layers[2]->bias_updates);
+            backward_convolutional_layer(network->layers[2], network->layers[1], network->layers[2]->delta, network->layers[1]->delta, 1);
 
-	    // conv backward
-	    conv_backward(network->layers[2]->batch, K2, N2, M2, channels_col2, height_col2, width_col2, ksize2, stride2, channels2, height2, width2, pad2, network->layers[1]->output, network->layers[2]->delta, network->layers[2]->weight_updates, network->layers[1]->delta, network->layers[2]->weights);
-            
 	    time_conv2_2 += read_timer_ms() - tmp;
             printf("conv2    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2_2);
 
             //printf("- backward pool1    -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //
 	    tmp = read_timer_ms();
 
-            // maxpool backward
-            max_pool_backward(network->layers[1]->batch, N1, M1, height_out1, width_out1, ksize1, stride1, channels1, height1, width1, pad1, network->layers[1]->indexes, network->layers[1]->delta, network->layers[0]->delta, network->layers[1]->output, network->layers[0]->output);
+	    backward_pooling_layer(network->layers[1], network->layers[0], network->layers[1]->delta, network->layers[0]->delta, 1);
        
             time_pool1_2 += read_timer_ms() - tmp;
             printf("pool1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool1_2);
 
             //printf("- backward conv1    -\n");
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            //l = network->layers[0]->
-            //
             tmp = read_timer_ms();
 
-	    // init
-            for(int i = 0; i < M0; i++) network->layers[0]->bias_updates[i] = 0;
-            for(int i = 0; i < K0*M0; i++) network->layers[0]->weight_updates[i] = 0;
+            backward_convolutional_layer(network->layers[0], network->layers[0], network->layers[0]->delta, network->layers[0]->delta, 1);
 
-            // gradient array
-            relu_backward(network->layers[0]->batch, N0*M0, network->layers[0]->output, network->layers[0]->delta);
-
-	    // backward bias
-            bias_backward(network->layers[0]->batch, N0, M0, network->layers[0]->delta, network->layers[0]->bias_updates);
-           
-	    // conv backward
-            conv_backward(network->layers[0]->batch, K0, N0, M0, channels_col0, height_col0, width_col0, ksize0, stride0, channels0, height0, width0, pad0, network->layers[0]->output, network->layers[0]->delta, network->layers[0]->weight_updates, network->layers[0]->delta, network->layers[0]->weights);
-            
 	    time_conv1_2 += read_timer_ms() - tmp;
             printf("conv1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1_2);
 
@@ -1078,14 +902,14 @@ int main (int argc, char **argv) {
         network->truth = y->vals+idx*y->ncols+img_n*y->ncols;
 
         // forwarding!
-	forward_convolutional_layer(              network->layers[0], network->input,             network->layers[0]->output, 1);
-	forward_pooling_layer(network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1);
-	forward_convolutional_layer(              network->layers[2], network->layers[1]->output, network->layers[2]->output, 1);
-        forward_pooling_layer(network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1);
-	forward_connected_layer(                  network->layers[4], network->layers[3]->output, network->layers[4]->output, 1);
-	forward_connected_layer(                  network->layers[5], network->layers[4]->output, network->layers[5]->output, 1);
-        forward_connected_layer(                  network->layers[6], network->layers[5]->output, network->layers[6]->output, 0);
-        forward_softmax_layer(                    network->layers[7], network->layers[6]->output, network->layers[7]->output   );
+	forward_convolutional_layer(network->layers[0], network->layers[0], network->input,             network->layers[0]->output, 1);
+	forward_pooling_layer(      network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1);
+	forward_convolutional_layer(network->layers[1], network->layers[2], network->layers[1]->output, network->layers[2]->output, 1);
+        forward_pooling_layer(      network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1);
+	forward_connected_layer(    network->layers[3], network->layers[4], network->layers[3]->output, network->layers[4]->output, 1);
+	forward_connected_layer(    network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1);
+        forward_connected_layer(    network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0);
+        forward_softmax_layer(      network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output   );
 
         // recording!
         int N = network->layers[7]->inputs;
