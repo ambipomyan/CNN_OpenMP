@@ -18,8 +18,8 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
     int HWC_in   = batch*height*width*channels;
     int HWC_out  = batch*M*N;
 
-    int n_groups  = 10240;  // set number of group manually
-    int n_threads = 256;    // MAX=992
+    int n_groups  = 5120;  // set number of group manually
+    int n_threads = 512;    // MAX=992
     int n_teams   = n_groups;
 
     int HWC_conv_tensor  = n_groups*height_col*width_col*channels_col;
@@ -359,7 +359,7 @@ void conv_backward(int batch, int M, int K, int N, int channels_col, int height_
 	for (i = 0; i < M; i++) {
             for (j = 0; j < N; j++) {
                 float sum= 0.0;
-                for (k = 0; k < K; k+=100) {
+                for (k = 0; k < K; k+=10) {
                     sum += delta_in[b*N*K+j*K+k]*conv_t1[i*K+k];
                 }
                 weight_updates[i*N+j] += sum;
@@ -388,7 +388,7 @@ void conv_backward(int batch, int M, int K, int N, int channels_col, int height_
 	for (i = 0; i < N; i++) {
             for (j = 0; j < M; j++) {
                 //float a_part = weights[i*M+j];
-                for (k = 0; k < K; k+=100) {
+                for (k = 0; k < K; k+=10) {
                     conv_t2[i*M*K+j*K+k] += weights[i*M+j]*delta_in[b*N*K+i*K+k];
                 }
             }

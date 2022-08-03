@@ -46,7 +46,7 @@ void connect_backward(int batch, int N, int M, float *delta_in, float *input, fl
         for (j = 0; j < N; j++) {
 	    float sum = 0.0;
 //#pragma omp parallel for reduction(+:sum)
-            for (k = 0; k < batch; k+=100) {
+            for (k = 0; k < batch; k+=10) {
                 sum += delta_in[k*M+i]*input[k*N+j];
             }
 	    weight_updates[i*N+j] = sum;
@@ -63,7 +63,7 @@ void connect_backward(int batch, int N, int M, float *delta_in, float *input, fl
         for (j = 0; j < N; j++) {
 	    float sum = 0.0;
 //#pragma omp parallel for reduction(+:sum)
-	    for (k = 0; k < M; k+=100) {
+	    for (k = 0; k < M; k+=10) {
                 sum += delta_in[i*M+k]*weights[k*N+j];
             }
 	    delta_out[i*N+j] = sum;
