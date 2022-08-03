@@ -134,7 +134,7 @@ void max_pool(int batch, int height_out, int width_out, int ksize, int stride, i
     int HWC_out   = batch*height_out*width_out*channels;
     int HWC_index = batch*height_out*width_out*channels;
 
-#pragma omp target teams distribute parallel for private(k,i,j,out_index,max,max_i,n,m,cur_h,cur_w,col_index,valid,val) collapse(4) map(to:input[0:HWC_in]) map(from:indexes[0:HWC_index]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for private(k,i,j,out_index,max,max_i,n,m,cur_h,cur_w,col_index,valid,val) collapse(3) map(to:input[0:HWC_in]) map(from:indexes[0:HWC_index]) map(tofrom:output[0:HWC_out])
 {
     for (b = 0; b < batch; b++) {
         for (k = 0; k < channels; k++) {
@@ -359,7 +359,7 @@ void conv_backward(int batch, int M, int K, int N, int channels_col, int height_
 	for (i = 0; i < M; i++) {
             for (j = 0; j < N; j++) {
                 float sum= 0.0;
-                for (k = 0; k < K; k++) {
+                for (k = 0; k < K; k+=100) {
                     sum += delta_in[b*N*K+j*K+k]*conv_t1[i*K+k];
                 }
                 weight_updates[i*N+j] += sum;
