@@ -388,7 +388,7 @@ void conv_backward(int batch, int M, int K, int N, int channels_col, int height_
 	for (i = 0; i < N; i++) {
             for (j = 0; j < M; j++) {
                 //float a_part = weights[i*M+j];
-                for (k = 0; k < K; k++) {
+                for (k = 0; k < K; k+=100) {
                     conv_t2[i*M*K+j*K+k] += weights[i*M+j]*delta_in[b*N*K+i*K+k];
                 }
             }
