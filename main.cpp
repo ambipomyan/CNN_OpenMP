@@ -576,7 +576,24 @@ int main (int argc, char **argv) {
     time_conv1_2 = 0.0; time_conv2_2 = 0.0; time_connect1_2 = 0.0; time_connect2_2 = 0.0; time_connect3_2 = 0.0; time_pool1_2 = 0.0; time_pool2_2 = 0.0; time_softmax_2 = 0.0;
     time_conv1_3 = 0.0; time_conv2_3 = 0.0; time_connect1_3 = 0.0; time_connect2_3 = 0.0; time_connect3_3 = 0.0;
 
-  // loop start
+    // get number of devices, teams and threads
+    num_dev = omp_get_num_devices(); // num_dev has been initilized before
+
+#pragma omp parallel for num_threads(num_dev)
+    for (int i = 0; i < num_dev; i++) {
+#pragma omp target device(i)
+{
+        if (omp_is_initial_device()) {
+            printf("Running on host!\n");
+        } else {
+            int nteams   = omp_get_num_teams();
+	    int nthreads = omp_get_num_threads();
+	    printf("Running on device %d with %d teams in total and %d threads in each team!\n", i, nteams, nthreads);
+        }
+}	
+    }
+
+    // loop start
     tmp_total_epoch = read_timer_ms();
 
     // i am lucky
