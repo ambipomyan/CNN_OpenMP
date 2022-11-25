@@ -30,8 +30,8 @@ int main (int argc, char **argv) {
     int training_batch    = atoi(argv[3]);
     int training_epoch    = atoi(argv[4]);
     int num_dev           = atoi(argv[5]); // make it easier for experiments: no worry for conflict between omp targets and CUDA
+
     int batch = training_volume/training_batch;
-    //batch = batch/num_dev;
 
     // set parameter for network
     int img_h = 28;
@@ -603,14 +603,12 @@ int main (int argc, char **argv) {
     for (int i_epoch = 0; i_epoch < training_epoch; i_epoch++) {
         //printf("- EPOCH%d -\n", i_epoch);
 //#pragma omp parallel for num_threads(num_dev)
-      //for (int dev_id = 0; dev_id < num_dev; dev_id++) { // for loop for multiple-GPU offloading - START POINT
-	for (int i_batch = 0; i_batch < training_batch; i_batch++) {
-            int dev_id = omp_get_thread_num();
+      for (int dev_id = 0; dev_id < num_dev; dev_id++) { // for loop for multiple-GPU offloading - START POINT
+	for (int i_batch = training_batch/num_dev*dev_id; i_batch < training_batch/num_dev*(dev_id+1); i_batch++) {
             //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
-            
 	    int index = i_batch*batch;
-	    //int index = i_batch*batch + dev_id*training_batch*batch;
-            network->input = X->vals+index*X->ncols;
+	    
+	    network->input = X->vals+index*X->ncols;
             network->truth = y->vals+index*y->ncols;
 
             /*
@@ -886,7 +884,7 @@ int main (int argc, char **argv) {
             printf("total_batch epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_total_batch);
 
         }
-      //} // for loop for multiple-GPU offloading - END POINT
+      } // for loop for multiple-GPU offloading - END POINT
 
         printf("error = %f\n", network->cost);
     
