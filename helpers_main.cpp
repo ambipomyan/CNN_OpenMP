@@ -12,7 +12,7 @@
 
 /****** forward ******/
 
-void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op) {
+void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op, int dev_id, int num_dev) {
     // shape
     //int n;
     //int N, M, K;
@@ -73,7 +73,7 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
 }
 
 
-void forward_pooling_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op) {
+void forward_pooling_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op, int dev_id, int num_dev) {
     //int N = layer->out_h*layer->out_w*layer->out_c;
     //int M = layer_->out_h*layer_->out_w*layer_->out_c;	    
 
@@ -96,7 +96,7 @@ void forward_pooling_layer(LAYER *layer_, LAYER *layer, float *input, float *out
 
 }
 
-void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op) {
+void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op, int dev_id, int num_dev) {
     int K = layer->inputs;
     int N = layer->outputs;
 
@@ -119,7 +119,7 @@ void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *o
 
 }
 
-void forward_softmax_layer(LAYER *layer_, LAYER *layer, float *input, float *output) {
+void forward_softmax_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int dev_id, int num_dev) {
     int N = layer->inputs;
 
     // init 
@@ -177,14 +177,14 @@ float compute_loss_function(LAYER *layer, float *network_truth, int training_vol
 
 /****** backward ******/
 
-void backward_softmax_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out) {
+void backward_softmax_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int dev_id, int num_dev) {
     int N = layer->inputs;
 
     //axpy
     softmax_backward(layer->batch, N, delta_in, delta_out);
 }
 
-void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op) {
+void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev) {
     int K = layer->inputs;
     int N = layer->outputs;
 
@@ -209,7 +209,7 @@ void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, floa
 
 }
 
-void backward_pooling_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op) {
+void backward_pooling_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev) {
     int N = layer->out_h*layer->out_w*layer->out_c;
     int M = layer_->out_h*layer_->out_w*layer_->out_c;            
 
@@ -227,7 +227,7 @@ void backward_pooling_layer(LAYER *layer, LAYER *layer_, float *delta_in, float 
 
 }
 
-void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op) {
+void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev) {
     int M = layer->n;
     int K = layer->size*layer->size*layer->c;
     int N = layer->out_w*layer->out_h;
