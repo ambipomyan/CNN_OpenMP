@@ -602,10 +602,10 @@ int main (int argc, char **argv) {
     // i am lucky
     for (int i_epoch = 0; i_epoch < training_epoch; i_epoch++) {
         //printf("- EPOCH%d -\n", i_epoch);
-//#pragma omp parallel for num_threads(num_dev)
-      for (int dev_id = 0; dev_id < num_dev; dev_id++) { // for loop for multiple-GPU offloading - START POINT
-	for (int i_batch = training_batch/num_dev*dev_id; i_batch < training_batch/num_dev*(dev_id+1); i_batch++) {
-            //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
+#pragma omp parallel for num_threads(num_dev) schedule(static)
+	for (int i_batch = 0; i_batch < training_batch; i_batch++) {
+            int dev_id = omp_get_thread_num();
+	    //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
 	    int index = i_batch*batch;
 	    
 	    network->input = X->vals+index*X->ncols;
@@ -884,7 +884,6 @@ int main (int argc, char **argv) {
             printf("total_batch epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_total_batch);
 
         }
-      } // for loop for multiple-GPU offloading - END POINT
 
         printf("error = %f\n", network->cost);
     
