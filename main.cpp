@@ -11,6 +11,8 @@
 #include "opencv2/highgui.hpp"
 
 #include "omp.h"
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 
 #include "helpers_main.h"
 
@@ -604,7 +606,7 @@ int main (int argc, char **argv) {
         //printf("- EPOCH%d -\n", i_epoch);
 #pragma omp parallel for num_threads(num_dev) schedule(static)
 	for (int i_batch = 0; i_batch < training_batch; i_batch++) {
-            int dev_id = omp_get_thread_num();
+            int dev_id = omp_get_thread_num(); cudaSetDevice(dev_id);
 	    //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
 	    int index = i_batch*batch;
 	    
