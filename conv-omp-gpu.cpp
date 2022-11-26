@@ -11,18 +11,20 @@
 
 
 void conv(int batch, int M, int K, int N, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, float *weights, int dev_id, int num_dev) {
-    int i, j, p, q, c, h, w, gid;
+    int i, j, p, q, c, h, w;
+    //int gid;
     int w_offset, h_offset, c_im, row, col, col_index, out_index;
 
     int HWC_filt = M*K;
     int HWC_in   = batch*height*width*channels;
     int HWC_out  = batch*M*N;
 
-    int n_groups  = 5120;  // set number of group manually
-    int n_threads = 512;    // MAX=992
-    int n_teams   = n_groups;
+    //int n_groups  = 5120;  // set number of group manually
+    //int n_threads = 512;   // MAX=992
+    //int n_teams   = n_groups;
 
-    int HWC_conv_tensor  = n_groups*height_col*width_col*channels_col;
+    //int HWC_conv_tensor  = n_groups*height_col*width_col*channels_col;
+    int HWC_conv_tensor =             height_col*width_col*channels_col;
 
     double tmp, time_conv_fwd;
     tmp = read_timer_ms();
@@ -30,13 +32,14 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
     float *conv_tensor = (float *)malloc(HWC_conv_tensor*sizeof(float));
 
     // conv
-#pragma omp target teams distribute private(gid,c,h,w,row,col,col_index,out_index,w_offset,h_offset,c_im,p,q,j) num_teams(n_teams) thread_limit(n_threads) \
-	           map(alloc:conv_tensor[0:HWC_conv_tensor])    \
+/* #pragma omp target teams distribute private(gid,c,h,w,row,col,col_index,out_index,w_offset,h_offset,c_im,p,q,j) num_teams(n_teams) thread_limit(n_threads) \ */
+#pragma omp target teams distribute private(       c,h,w,row,col,col_index,out_index,w_offset,h_offset,c_im,p,q,j) \
+                   map(alloc:conv_tensor[0:HWC_conv_tensor])    \
 	           map(to:input[0:HWC_in], weights[0:HWC_filt]) \
 	           map(tofrom:output[0:HWC_out])
 {
     for (i = 0; i < batch; i++) {
-	gid = i%n_groups;
+	//gid = i%n_groups;
 #pragma omp parallel for collapse(3)
 	for (c = 0; c < channels_col; c++) {
             //w_offset = c%ksize;
@@ -50,8 +53,9 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
                     row = h_offset + h*stride;
                     col = w_offset + w*stride;
                     out_index = i*channels*height*width + c_im*height*width + row*width + col;
-                    col_index = gid*height_col*width_col*channels_col + c*height_col*width_col + h*width_col + w;
-                    row -= pad;
+                    //col_index = gid*height_col*width_col*channels_col + c*height_col*width_col + h*width_col + w;
+                    col_index =                                           c*height_col*width_col + h*width_col + w;
+		    row -= pad;
                     col -= pad;
                     if (row < 0 || col < 0 || row >= height || col >= width) {
                         conv_tensor[col_index] = 0.0;
@@ -69,8 +73,9 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
             for (j = 0; j < N; j++) {
 		float sum = 0.0;
 		for (q = 0; q < K; q++) {
-	            sum += weights[p*K+q]*conv_tensor[gid*K*N+q*N+j];
-                    //printf("%f, %f, %f\n", weights[p*K+q], B0[q*N+j], output[i*M*N+p*N+j]);
+	            //sum += weights[p*K+q]*conv_tensor[gid*K*N+q*N+j];
+                    sum += weights[p*K+q]*          conv_tensor[q*N+j];
+		    //printf("%f, %f, %f\n", weights[p*K+q], B0[q*N+j], output[i*M*N+p*N+j]);
                 }
 		output[i*M*N+p*N+j] = sum;
             }
