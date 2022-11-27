@@ -602,8 +602,9 @@ int main (int argc, char **argv) {
     // i am lucky
     for (int i_epoch = 0; i_epoch < training_epoch; i_epoch++) {
         //printf("- EPOCH%d -\n", i_epoch);
+#pragma omp parallel for num_threads(num_dev)
 	for (int i_batch = 0; i_batch < training_batch; i_batch++) {
-            int dev_id = -1; //omp_get_thread_num();
+            int dev_id = i_batch%num_dev;//omp_get_thread_num();
 	    //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
 	    int index = i_batch*batch;
 	    
