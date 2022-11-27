@@ -58,7 +58,7 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
     // *weights         [network->layers[0]->weights]
     // *T               tensor, device-only data
 
-#pragma omp target data map(tofrom:output[0:n])
+//#pragma omp target data map(tofrom:output[0:n])
     {
     // conv
     conv(layer->batch, M, K, N, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, input, output, layer->weights, dev_id, num_dev);
@@ -188,14 +188,14 @@ void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, floa
     int K = layer->inputs;
     int N = layer->outputs;
 
-    int n_in  = layer->batch*N;
-    int n_out = layer->batch*K;
+//    int n_in  = layer->batch*N;
+//    int n_out = layer->batch*K;
 
     // init
     for(int i = 0; i < N; i++) layer->bias_updates[i] = 0;
     for(int i = 0; i < N*K; i++) layer->weight_updates[i] = 0;
 
-#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
+//#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
     {
     // gradient array
     if (Op != 0) relu_backward(layer->batch, N, layer->output, delta_in, dev_id, num_dev);
@@ -243,14 +243,14 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
     int width_col    = (width+2*pad-ksize)/stride+1;
     int channels_col = channels*ksize*ksize;
 
-    int n_in  = layer->batch*M*N;
-    int n_out = layer->batch*height*width*channels;
+//    int n_in  = layer->batch*M*N;
+//    int n_out = layer->batch*height*width*channels;
 
     // init 
     for(int i = 0; i < M; i++) layer->bias_updates[i] = 0;
     for(int i = 0; i < K*M; i++) layer->weight_updates[i] = 0;
 
-#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
+//#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
     {
     // gradient array
     if (Op != 0) relu_backward(layer->batch, N*M, layer->output, delta_in, dev_id, num_dev);
