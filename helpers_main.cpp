@@ -105,7 +105,7 @@ void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *o
     for (int i = 0; i < n; i++) layer->delta[i] = 0;
     for (int i = 0; i < n; i++) layer->output[i] = 0;
 
-#pragma omp target data map(tofrom:output[0:n])
+//#pragma omp target data map(tofrom:output[0:n])
     {
     // connected
     connect(layer->batch, K, N, input, output, layer->weights, dev_id, num_dev);
