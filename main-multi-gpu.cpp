@@ -51,6 +51,7 @@ int main (int argc, char **argv) {
     network         = (NETWORK *)malloc(sizeof(NETWORK));
     network->n      = n_layers;
     network->layers = (LAYER **)malloc(n_layers*sizeof(LAYER *));
+    network->layers0= (LAYER *)malloc(sizeof(LAYER *));
     network->cost   = 0;
     
     network->h = img_h;
@@ -113,6 +114,44 @@ int main (int argc, char **argv) {
     img_h = layer0->out_h;
     img_w = layer0->out_w;
     img_c = layer0->out_c;
+
+    // layers0
+    LAYER *layers0;
+    layers0 = (LAYER *)malloc(sizeof(LAYER));
+    layers0->layer_type = CONVOLUTIONAL;
+    layers0->activation = RELU;
+
+    layers0->batch   = batch;
+    layers0->h       = img_h;
+    layers0->w       = img_w;
+    layers0->c       = img_c;
+    layers0->n       = n;
+    layers0->size    = size;
+    layers0->stride  = stride;
+    layers0->padding = padding;
+
+    layers0->nweights = img_c*n*size*size;
+    layers0->nbiases  = n;
+
+    layers0->weights        = (float *)malloc(layer0->nweights*sizeof(float));
+    layers0->weight_updates = (float *)malloc(layer0->nweights*sizeof(float));
+    layers0->biases         = (float *)malloc(layer0->nbiases*sizeof(float));
+    layers0->bias_updates   = (float *)malloc(layer0->nbiases*sizeof(float));
+
+    for(int i = 0; i < layer0->nweights; i++) {layers0->weights[i] = scale*rand_normal();}
+    for(int i = 0; i < layer0->nbiases;  i++) {layers0->biases[i] = 0;}
+
+    layers0->out_h   = (layer0->h+2*layer0->padding-layer0->size)/layer0->stride+1;
+    layers0->out_w   = (layer0->w+2*layer0->padding-layer0->size)/layer0->stride+1;
+    layers0->out_c   = layer0->n;
+    layers0->outputs = layer0->out_h*layer0->out_w*layer0->out_c;
+    layers0->inputs  = layer0->w*layer0->h*layer0->c;
+
+    layers0->output = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
+    layers0->delta  = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
+
+    network->layers0 = layers0;
+    // layers0
     
     // pool1
     printf("pool1:    ");
@@ -807,7 +846,7 @@ int main (int argc, char **argv) {
             //printf("- backward conv1    -\n");
             tmp = read_timer_ms();
 
-            //backward_convolutional_layer(network->layers[0], network->layers[0], network->layers[0]->delta, network->layers[0]->delta, 1, dev_id, num_dev);
+            backward_convolutional_layer(network->layers[0], network->layers0, network->layers[0]->delta, network->layers0->delta, 1, dev_id, num_dev);
 
 	    time_conv1_2 += read_timer_ms() - tmp;
             printf("conv1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1_2);

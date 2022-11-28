@@ -125,6 +125,7 @@ struct network_ {
     int batch;
     float epoch;
     LAYER **layers; // all layers
+    LAYER *layers0; // copy of layer0
     float *output;
     
     float learning_rate;
