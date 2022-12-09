@@ -12,7 +12,7 @@
 
 /****** forward ******/
 
-void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op) {
+void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op, int dev_id, int num_dev) {
     // shape
     //int n;
     //int N, M, K;
@@ -59,18 +59,18 @@ void forward_convolutional_layer(LAYER *layer_, LAYER *layer, float *input, floa
     // *T               tensor, device-only data
 
     // conv
-    conv(layer->batch, M, K, N, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, input, output, layer->weights);
+    conv(layer->batch, M, K, N, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, input, output, layer->weights, dev_id, num_dev);
 
     // add bias
-    bias(layer->batch, M, N, output, layer->biases);
+    bias(layer->batch, M, N, output, layer->biases, dev_id, num_dev);
 
     // relu
-    if (Op != 0) relu(layer->batch, M, N, output);
+    if (Op != 0) relu(layer->batch, M, N, output, dev_id, num_dev);
 
 }
 
 
-void forward_pooling_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op) {
+void forward_pooling_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op, int dev_id, int num_dev) {
     //int N = layer->out_h*layer->out_w*layer->out_c;
     //int M = layer_->out_h*layer_->out_w*layer_->out_c;	    
 
@@ -89,11 +89,11 @@ void forward_pooling_layer(LAYER *layer_, LAYER *layer, float *input, float *out
     for (int i = 0; i < n; i++) layer->delta[i] = 0;
 
     // max pooling
-    max_pool(layer->batch, height_out, width_out, ksize, stride, channels, height, width, pad, input, output, layer->indexes); 
+    max_pool(layer->batch, height_out, width_out, ksize, stride, channels, height, width, pad, input, output, layer->indexes, dev_id, num_dev); 
 
 }
 
-void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op) {
+void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int Op, int dev_id, int num_dev) {
     int K = layer->inputs;
     int N = layer->outputs;
 
@@ -103,17 +103,17 @@ void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *o
     for (int i = 0; i < n; i++) layer->output[i] = 0;
 
     // connected
-    connect(layer->batch, K, N, input, output, layer->weights);
+    connect(layer->batch, K, N, input, output, layer->weights, dev_id, num_dev);
 
     // add bias
-    bias(layer->batch, 1, N, output, layer->biases);
+    bias(layer->batch, 1, N, output, layer->biases, dev_id, num_dev);
     
     // relu
-    if (Op != 0) relu(layer->batch, 1, N, output);
+    if (Op != 0) relu(layer->batch, 1, N, output, dev_id, num_dev);
 
 }
 
-void forward_softmax_layer(LAYER *layer_, LAYER *layer, float *input, float *output) {
+void forward_softmax_layer(LAYER *layer_, LAYER *layer, float *input, float *output, int dev_id, int num_dev) {
     int N = layer->inputs;
 
     // init 
@@ -121,7 +121,7 @@ void forward_softmax_layer(LAYER *layer_, LAYER *layer, float *input, float *out
     for (int i = 0; i < n; i++) layer->delta[i] = 0;
 
     //printf("N: %d\n", N);
-    softmax(layer->batch, N, input, output);
+    softmax(layer->batch, N, input, output, dev_id, num_dev);
 
 }
 
@@ -171,14 +171,14 @@ float compute_loss_function(LAYER *layer, float *network_truth, int training_vol
 
 /****** backward ******/
 
-void backward_softmax_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out) {
+void backward_softmax_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int dev_id, int num_dev) {
     int N = layer->inputs;
 
     //axpy
-    softmax_backward(layer->batch, N, delta_in, delta_out);
+    softmax_backward(layer->batch, N, delta_in, delta_out, dev_id, num_dev);
 }
 
-void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op) {
+void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev) {
     int K = layer->inputs;
     int N = layer->outputs;
 
@@ -190,17 +190,17 @@ void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, floa
     for(int i = 0; i < N*K; i++) layer->weight_updates[i] = 0;
 
     // gradient array
-    if (Op != 0) relu_backward(layer->batch, N, layer->output, delta_in);
+    if (Op != 0) relu_backward(layer->batch, N, layer->output, delta_in, dev_id, num_dev);
 
     // backward array
-    bias_backward(layer->batch, 1, N, delta_in, layer->bias_updates);
+    bias_backward(layer->batch, 1, N, delta_in, layer->bias_updates, dev_id, num_dev);
             
     // backward connected
-    connect_backward(layer->batch, K, N, delta_in, layer_->output, layer->weight_updates, layer->weights, delta_out);
+    connect_backward(layer->batch, K, N, delta_in, layer_->output, layer->weight_updates, layer->weights, delta_out, dev_id, num_dev);
 
 }
 
-void backward_pooling_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op) {
+void backward_pooling_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev) {
     int N = layer->out_h*layer->out_w*layer->out_c;
     int M = layer_->out_h*layer_->out_w*layer_->out_c;            
 
@@ -214,11 +214,11 @@ void backward_pooling_layer(LAYER *layer, LAYER *layer_, float *delta_in, float 
     int height_out   = layer->out_h;
     int width_out    = layer->out_w;
 
-    max_pool_backward(layer->batch, N, M, height_out, width_out, ksize, stride, channels, height, width, pad, layer->indexes, delta_in, delta_out, layer->output, layer_->output);
+    max_pool_backward(layer->batch, N, M, height_out, width_out, ksize, stride, channels, height, width, pad, layer->indexes, delta_in, delta_out, layer->output, layer_->output, dev_id, num_dev);
 
 }
 
-void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op) {
+void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev) {
     int M = layer->n;
     int K = layer->size*layer->size*layer->c;
     int N = layer->out_w*layer->out_h;
@@ -242,12 +242,12 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
     for(int i = 0; i < K*M; i++) layer->weight_updates[i] = 0;
 
     // gradient array
-    if (Op != 0) relu_backward(layer->batch, N*M, layer->output, delta_in);
+    if (Op != 0) relu_backward(layer->batch, N*M, layer->output, delta_in, dev_id, num_dev);
             
     // backward bias
-    bias_backward(layer->batch, N, M, delta_in, layer->bias_updates);
+    bias_backward(layer->batch, N, M, delta_in, layer->bias_updates, dev_id, num_dev);
 
     // conv backward
-    conv_backward(layer->batch, K, N, M, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, layer_->output, delta_in, layer->weight_updates, delta_out, layer->weights);
+    conv_backward(layer->batch, K, N, M, channels_col, height_col, width_col, ksize, stride, channels, height, width, pad, layer_->output, delta_in, layer->weight_updates, delta_out, layer->weights, dev_id, num_dev);
 
 }

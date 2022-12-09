@@ -10,7 +10,7 @@
 #include "conv.h"
 
 
-void conv(int batch, int M, int K, int N, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, float *weights) {
+void conv(int batch, int M, int K, int N, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, float *weights, int dev_id, int num_dev) {
     int i, j, p, q, c, h, w;
     int w_offset, h_offset, c_im, row, col, col_index, out_index;
     float a_part;
@@ -69,7 +69,7 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
 
 }
 
-void bias(int batch, int M, int N, float *output, float *biases) {
+void bias(int batch, int M, int N, float *output, float *biases, int dev_id, int num_dev) {
     int b, p, q;
 
 #pragma omp parallel for private(p,q) shared(output,biases)
@@ -89,7 +89,7 @@ void bias(int batch, int M, int N, float *output, float *biases) {
 
 }
 
-void relu(int batch, int M, int N, float *output) {
+void relu(int batch, int M, int N, float *output, int dev_id, int num_dev) {
     int i;
 
 #pragma omp parallel for shared(output)
@@ -102,7 +102,7 @@ void relu(int batch, int M, int N, float *output) {
 
 }
 
-void max_pool(int batch, int height_out, int width_out, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, int *indexes) {
+void max_pool(int batch, int height_out, int width_out, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, int *indexes, int dev_id, int num_dev) {
     int b, k, i, j, n, m;
     int out_index, col_index, cur_h, cur_w;
     int max_i, valid;
@@ -168,7 +168,7 @@ void skip_connection(int batch, int M, int N, float *input, float *output) {
     free(temp);
 }
 
-void softmax(int batch, int N, float *input, float *output) {
+void softmax(int batch, int N, float *input, float *output, int dev_id, int num_dev) {
     int b,i;
     float largest, sum, e;
     
@@ -200,7 +200,7 @@ void softmax(int batch, int N, float *input, float *output) {
 
 }
 
-void softmax_backward(int batch, int N, float *input, float *output) {
+void softmax_backward(int batch, int N, float *input, float *output, int dev_id, int num_dev) {
     int i;
 
 #pragma omp parallel for shared(output,input)
@@ -212,7 +212,7 @@ void softmax_backward(int batch, int N, float *input, float *output) {
 
 }
 
-void relu_backward(int batch, int N, float *output, float *delta) {
+void relu_backward(int batch, int N, float *output, float *delta, int dev_id, int num_dev) {
     int i;
 
 #pragma omp parallel for shared(output,delta)
@@ -224,7 +224,7 @@ void relu_backward(int batch, int N, float *output, float *delta) {
 
 }
 
-void bias_backward(int batch, int N, int M, float *input, float *output) {
+void bias_backward(int batch, int N, int M, float *input, float *output, int dev_id, int num_dev) {
     int b, i, j;
 
 #pragma omp parallel for private(i,j) shared(output,input)
@@ -240,7 +240,7 @@ void bias_backward(int batch, int N, int M, float *input, float *output) {
 
 }
 
-void max_pool_backward(int batch, int N, int M, int height_out, int width_out, int ksize, int stride, int channels, int height, int width, int pad, int *indexes, float *delta_in, float *delta_out, float *input, float *output) {
+void max_pool_backward(int batch, int N, int M, int height_out, int width_out, int ksize, int stride, int channels, int height, int width, int pad, int *indexes, float *delta_in, float *delta_out, float *input, float *output, int dev_id, int num_dev) {
     int i, index;
 
 #pragma omp parallel for private(index) shared(indexes,delta_out,delta_in)
@@ -253,7 +253,7 @@ void max_pool_backward(int batch, int N, int M, int height_out, int width_out, i
 
 }
 
-void conv_backward(int batch, int M, int K, int N, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *delta_in, float *weight_updates, float *delta_out, float *weights) {
+void conv_backward(int batch, int M, int K, int N, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *delta_in, float *weight_updates, float *delta_out, float *weights, int dev_id, int num_dev) {
     int i, j, k, b, c, h, w;
     int w_offset, h_offset, c_im, row, col, col_index, out_index;
     float sum, a_part;

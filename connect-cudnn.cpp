@@ -12,7 +12,7 @@
 #include "connect.h"
 
 
-void connect(int batch, int K, int N, float *input, float *output, float *weights) {
+void connect(int batch, int K, int N, float *input, float *output, float *weights, int dev_id, int num_dev) {
     cublasHandle_t handle_;
     cublasCreate(&handle_);
 
@@ -57,7 +57,7 @@ void connect(int batch, int K, int N, float *input, float *output, float *weight
 }
  */
 
-void connect_backward(int batch, int N, int M, float *delta_in, float *input, float *weight_updates, float *weights, float *delta_out) {
+void connect_backward(int batch, int N, int M, float *delta_in, float *input, float *weight_updates, float *weights, float *delta_out, int dev_id, int num_dev) {
     cublasHandle_t handle_;
     cublasCreate(&handle_);
 
