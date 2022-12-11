@@ -36,7 +36,7 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
 #pragma omp target teams distribute private(       c,h,w,row,col,col_index,out_index,w_offset,h_offset,c_im,p,q,j) \
                    map(alloc:conv_tensor[0:HWC_conv_tensor])    \
 	           map(to:input[0:HWC_in], weights[0:HWC_filt]) \
-	           map(tofrom:output[0:HWC_out])
+	           map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (i = 0; i < batch; i++) {
 	//gid = i%n_groups;
@@ -97,7 +97,7 @@ void bias(int batch, int M, int N, float *output, float *biases, int dev_id, int
     int HWC_bias = M;
     int HWC_out = batch*M*N;
 
-#pragma omp target teams distribute parallel for private(p,q) collapse(3) map(to:biases[0:HWC_bias]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for private(p,q) collapse(3) map(to:biases[0:HWC_bias]) map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     // # of images
     for (b = 0; b < batch; b++) {
@@ -119,7 +119,7 @@ void relu(int batch, int M, int N, float *output, int dev_id, int num_dev) {
     
     int HWC_out = batch*M*N; 
 
-#pragma omp target teams distribute parallel for map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (i = 0; i < batch*M*N; i++) {
         if (output[i] < 0) output[i] = 0.0001*output[i];

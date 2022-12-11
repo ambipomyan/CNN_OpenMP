@@ -641,10 +641,10 @@ int main (int argc, char **argv) {
     // i am lucky
     for (int i_epoch = 0; i_epoch < training_epoch; i_epoch++) {
         //printf("- EPOCH%d -\n", i_epoch);
-//#pragma omp parallel for num_threads(num_dev)
+#pragma omp parallel for num_threads(num_dev)
 	for (int i_batch = 0; i_batch < training_batch; i_batch++) {
-            //int dev_id = i_batch%num_dev;
-	    int dev_id = omp_get_device_num();
+            int dev_id = i_batch%num_dev;
+	    //int dev_id = omp_get_device_num();
 	    //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
 	    int index = i_batch*batch;
 	    
@@ -690,7 +690,7 @@ int main (int argc, char **argv) {
             //printf("- forward  pool1    -\n");
 	    tmp = read_timer_ms();
 	    
-	    forward_pooling_layer(network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1, dev_id, num_dev);
+	    //forward_pooling_layer(network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1, dev_id, num_dev);
 
 	    time_pool1 += read_timer_ms() - tmp;
             printf("maxpool1 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool1);
@@ -714,7 +714,7 @@ int main (int argc, char **argv) {
             //printf("- forward  conv2    -\n");
             tmp = read_timer_ms();
 	    
-	    forward_convolutional_layer(network->layers[1], network->layers[2], network->layers[1]->output, network->layers[2]->output, 1, dev_id, num_dev);
+	    //forward_convolutional_layer(network->layers[1], network->layers[2], network->layers[1]->output, network->layers[2]->output, 1, dev_id, num_dev);
 
 	    time_conv2 += read_timer_ms() - tmp;
             printf("conv2    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2);
@@ -728,7 +728,7 @@ int main (int argc, char **argv) {
 	    //printf("- forward  pool2    -\n");
 	    tmp = read_timer_ms();
 	    
-            forward_pooling_layer(network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1, dev_id, num_dev);
+            //forward_pooling_layer(network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1, dev_id, num_dev);
 
             time_pool2 += read_timer_ms() - tmp;
             printf("maxpool2 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool2);
@@ -738,7 +738,7 @@ int main (int argc, char **argv) {
             //printf("- forward  connect1 -\n");
 	    tmp = read_timer_ms();
 	    
-	    forward_connected_layer(network->layers[3], network->layers[4], network->layers[3]->output, network->layers[4]->output, 1, dev_id, num_dev);
+	    //forward_connected_layer(network->layers[3], network->layers[4], network->layers[3]->output, network->layers[4]->output, 1, dev_id, num_dev);
 
 	    //printf("network->input size: %d\n", network->layers[4]->batch*network->layers[4]->outputs);
             
@@ -748,7 +748,7 @@ int main (int argc, char **argv) {
             //printf("- forward  connect2 -\n");
 	    tmp = read_timer_ms();
 
-            forward_connected_layer(network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1, dev_id, num_dev);
+            //forward_connected_layer(network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1, dev_id, num_dev);
 	    
 	    //printf("network->input size: %d\n", network->layers[5]->batch*network->layers[5]->outputs);
             
@@ -758,7 +758,7 @@ int main (int argc, char **argv) {
             //printf("- forward  connect3 -\n");
 	    tmp = read_timer_ms();
 
-	    forward_connected_layer(network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0, dev_id, num_dev);
+	    //forward_connected_layer(network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0, dev_id, num_dev);
 
 	    time_connect3 += read_timer_ms() - tmp;
             printf("connect3 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3);
@@ -768,7 +768,7 @@ int main (int argc, char **argv) {
             //printf("- forward  softmax  -\n");
 	    tmp = read_timer_ms();
 
-	    forward_softmax_layer(network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output, dev_id, num_dev);
+	    //forward_softmax_layer(network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output, dev_id, num_dev);
 
 	    time_softmax += read_timer_ms() - tmp;
             printf("softmax  forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax);
@@ -791,7 +791,7 @@ int main (int argc, char **argv) {
             //
 	    tmp = read_timer_ms();
             
-            backward_softmax_layer(network->layers[7], network->layers[6], network->layers[7]->delta, network->layers[6]->delta, dev_id, num_dev);
+            //backward_softmax_layer(network->layers[7], network->layers[6], network->layers[7]->delta, network->layers[6]->delta, dev_id, num_dev);
 
 	    time_softmax_2 += read_timer_ms() - tmp;
             printf("softmax  backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax_2);
@@ -799,7 +799,7 @@ int main (int argc, char **argv) {
 	    //printf("- backward connect3 -\n");
 	    tmp = read_timer_ms();
 
-            backward_connected_layer(network->layers[6], network->layers[5], network->layers[6]->delta, network->layers[5]->delta, 0, dev_id, num_dev);
+            //backward_connected_layer(network->layers[6], network->layers[5], network->layers[6]->delta, network->layers[5]->delta, 0, dev_id, num_dev);
 
 	    time_connect3_2 += read_timer_ms() - tmp;
             printf("connect3 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3_2);
@@ -807,7 +807,7 @@ int main (int argc, char **argv) {
 	    //printf("- backward connect2 -\n");
 	    tmp = read_timer_ms();
 
-            backward_connected_layer(network->layers[5], network->layers[4], network->layers[5]->delta, network->layers[4]->delta, 1, dev_id, num_dev);
+            //backward_connected_layer(network->layers[5], network->layers[4], network->layers[5]->delta, network->layers[4]->delta, 1, dev_id, num_dev);
 
 	    time_connect2_2 += read_timer_ms() - tmp;
             printf("connect2 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect2_2);
@@ -815,7 +815,7 @@ int main (int argc, char **argv) {
 	    //printf("- backward connect1 -\n");
 	    tmp = read_timer_ms();
 
-            backward_connected_layer(network->layers[4], network->layers[3], network->layers[4]->delta, network->layers[3]->delta, 1, dev_id, num_dev);
+            //backward_connected_layer(network->layers[4], network->layers[3], network->layers[4]->delta, network->layers[3]->delta, 1, dev_id, num_dev);
 
             time_connect1_2 += read_timer_ms() - tmp;
             printf("connect1 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect1_2);
@@ -823,7 +823,7 @@ int main (int argc, char **argv) {
 	    //printf("- backward pool2    -\n");
 	    tmp = read_timer_ms();
             
-	    backward_pooling_layer(network->layers[3], network->layers[2], network->layers[3]->delta, network->layers[2]->delta, 1, dev_id, num_dev);
+	    //backward_pooling_layer(network->layers[3], network->layers[2], network->layers[3]->delta, network->layers[2]->delta, 1, dev_id, num_dev);
 
 	    time_pool2_2 += read_timer_ms() - tmp;
             printf("pool2    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool2_2);
@@ -831,7 +831,7 @@ int main (int argc, char **argv) {
 	    //printf("- backward conv2    -\n");
 	    tmp = read_timer_ms();
 
-            backward_convolutional_layer(network->layers[2], network->layers[1], network->layers[2]->delta, network->layers[1]->delta, 1, dev_id, num_dev);
+            //backward_convolutional_layer(network->layers[2], network->layers[1], network->layers[2]->delta, network->layers[1]->delta, 1, dev_id, num_dev);
 
 	    time_conv2_2 += read_timer_ms() - tmp;
             printf("conv2    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2_2);
@@ -839,7 +839,7 @@ int main (int argc, char **argv) {
             //printf("- backward pool1    -\n");
 	    tmp = read_timer_ms();
 
-	    backward_pooling_layer(network->layers[1], network->layers[0], network->layers[1]->delta, network->layers[0]->delta, 1, dev_id, num_dev);
+	    //backward_pooling_layer(network->layers[1], network->layers[0], network->layers[1]->delta, network->layers[0]->delta, 1, dev_id, num_dev);
        
             time_pool1_2 += read_timer_ms() - tmp;
             printf("pool1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool1_2);
@@ -847,7 +847,7 @@ int main (int argc, char **argv) {
             //printf("- backward conv1    -\n");
             tmp = read_timer_ms();
 
-            backward_convolutional_layer(network->layers[0], network->layers0, network->layers[0]->delta, network->layers0->delta, 1, dev_id, num_dev);
+            //backward_convolutional_layer(network->layers[0], network->layers0, network->layers[0]->delta, network->layers0->delta, 1, dev_id, num_dev);
 
 	    time_conv1_2 += read_timer_ms() - tmp;
             printf("conv1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1_2);
