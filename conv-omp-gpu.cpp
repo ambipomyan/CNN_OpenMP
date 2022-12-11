@@ -139,7 +139,7 @@ void max_pool(int batch, int height_out, int width_out, int ksize, int stride, i
     int HWC_out   = batch*height_out*width_out*channels;
     int HWC_index = batch*height_out*width_out*channels;
 
-#pragma omp target teams distribute parallel for private(k,i,j,out_index,max,max_i,n,m,cur_h,cur_w,col_index,valid,val) collapse(3) map(to:input[0:HWC_in]) map(from:indexes[0:HWC_index]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for private(k,i,j,out_index,max,max_i,n,m,cur_h,cur_w,col_index,valid,val) collapse(3) map(to:input[0:HWC_in]) map(from:indexes[0:HWC_index]) map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (b = 0; b < batch; b++) {
         for (k = 0; k < channels; k++) {
@@ -216,7 +216,7 @@ void softmax(int batch, int N, float *input, float *output, int dev_id, int num_
     int HWC_in  = batch*N;
     int HWC_out = batch*N;
 
-#pragma omp target teams distribute parallel for private(i) reduction(+:sum) map(to:input[0:HWC_in]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for private(i) reduction(+:sum) map(to:input[0:HWC_in]) map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (b = 0; b < batch; b++) {
         sum = 0;
@@ -248,7 +248,7 @@ void softmax_backward(int batch, int N, float *input, float *output, int dev_id,
     int HWC_in  = batch*N;
     int HWC_out = batch*N;
 
-#pragma omp target teams distribute parallel for map(to:input[0:HWC_in]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for map(to:input[0:HWC_in]) map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (i = 0; i < batch*N; i++) {
         output[i] += input[i];
@@ -263,7 +263,7 @@ void relu_backward(int batch, int N, float *output, float *delta, int dev_id, in
     int HWC_in  = batch*N;
     int HWC_out = batch*N;
 
-#pragma omp target teams distribute parallel for map(to:output[0:HWC_in]) map(tofrom:delta[0:HWC_out])
+#pragma omp target teams distribute parallel for map(to:output[0:HWC_in]) map(tofrom:delta[0:HWC_out]) device(dev_id)
 {
     for (i = 0; i < batch*N; i++) {
         if (output[i] <= 0) delta[i] = 0;
@@ -278,7 +278,7 @@ void bias_backward(int batch, int N, int M, float *input, float *output, int dev
     int HWC_in  = batch*M*N;
     int HWC_out = M;
 
-#pragma omp target teams distribute parallel for private(i,j) collapse(3) map(to:input[0:HWC_in]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for private(i,j) collapse(3) map(to:input[0:HWC_in]) map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (b = 0; b < batch; b++) {
         for (i = 0; i < N; i++) {
@@ -298,7 +298,7 @@ void max_pool_backward(int batch, int N, int M, int height_out, int width_out, i
     int HWC_delta_out = batch*M;
     int HWC_index     = batch*N;
 
-#pragma omp target teams distribute parallel for private(index) map(to:delta_in[0:HWC_delta_in], indexes[0:HWC_index]) map(tofrom:delta_out[0:HWC_delta_out])
+#pragma omp target teams distribute parallel for private(index) map(to:delta_in[0:HWC_delta_in], indexes[0:HWC_index]) map(tofrom:delta_out[0:HWC_delta_out]) device(dev_id)
 {
     for (i = 0; i < batch*N; i++) {
         index = indexes[i];
@@ -332,7 +332,7 @@ void conv_backward(int batch, int M, int K, int N, int channels_col, int height_
 #pragma omp target teams distribute private(c,h,w,row,col,col_index,out_index,w_offset,h_offset,c_im,i,j,k) \
                    map(alloc:conv_t1[0:HWC_conv_t1])                 \
                    map(to:input[0:HWC_in], delta_in[0:HWC_delta_in]) \
-                   map(tofrom:weight_updates[0:HWC_weight_updates])
+                   map(tofrom:weight_updates[0:HWC_weight_updates]) device(dev_id)
 {
     for (b = 0; b < batch; b++) {
 #pragma omp parallel for collapse(3)
@@ -386,7 +386,7 @@ void conv_backward(int batch, int M, int K, int N, int channels_col, int height_
 #pragma omp target teams distribute private(i,j,k,c,h,w,row,col,col_index,out_index,w_offset,h_offset,c_im) \
 		   map(alloc:conv_t2[0:HWC_conv_t2])                     \
                    map(to:weights[0:HWC_filt], delta_in[0:HWC_delta_in]) \
-		   map(tofrom:delta_out[0:HWC_delta_out])
+		   map(tofrom:delta_out[0:HWC_delta_out]) device(dev_id)
 {
     for (b = 0; b < batch; b++) {
 #pragma omp parallel for collapse(3)

@@ -105,7 +105,7 @@ void forward_connected_layer(LAYER *layer_, LAYER *layer, float *input, float *o
     for (int i = 0; i < n; i++) layer->delta[i] = 0;
     for (int i = 0; i < n; i++) layer->output[i] = 0;
 
-#pragma omp target data map(tofrom:output[0:n])
+#pragma omp target data map(tofrom:output[0:n]) device(dev_id)
     {
     // connected
     connect(layer->batch, K, N, input, output, layer->weights, dev_id, num_dev);
@@ -195,7 +195,7 @@ void backward_connected_layer(LAYER *layer, LAYER *layer_, float *delta_in, floa
     for(int i = 0; i < N; i++) layer->bias_updates[i] = 0;
     for(int i = 0; i < N*K; i++) layer->weight_updates[i] = 0;
 
-#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
+#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out]) device(dev_id)
     {
     // gradient array
     if (Op != 0) relu_backward(layer->batch, N, layer->output, delta_in, dev_id, num_dev);
@@ -250,7 +250,7 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
     for(int i = 0; i < M; i++) layer->bias_updates[i] = 0;
     for(int i = 0; i < K*M; i++) layer->weight_updates[i] = 0;
 
-#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out])
+#pragma omp target data map(to:delta_in[0:n_in]) map(tofrom:delta_out[0:n_out]) device(dev_id)
     {
     // gradient array
     if (Op != 0) relu_backward(layer->batch, N*M, layer->output, delta_in, dev_id, num_dev);

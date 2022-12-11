@@ -15,7 +15,7 @@ void connect(int batch, int K, int N, float *input, float *output, float *weight
     int HWC_out    = batch*N;
     int HWC_weight = N*K;
 
-#pragma omp target teams distribute parallel for private(j,k) collapse(2) map(to:input[0:HWC_in], weights[0:HWC_weight]) map(tofrom:output[0:HWC_out])
+#pragma omp target teams distribute parallel for private(j,k) collapse(2) map(to:input[0:HWC_in], weights[0:HWC_weight]) map(tofrom:output[0:HWC_out]) device(dev_id)
 {
     for (i = 0; i < batch; i++) {
         for (j = 0; j < N; j++) {
@@ -38,7 +38,7 @@ void connect_backward(int batch, int N, int M, float *delta_in, float *input, fl
     int HWC_weight_updates = M*N;
 
     // gemm
-#pragma omp target teams distribute private(j,k) collapse(2) map(to:input[0:HWC_in], delta_in[0:HWC_delta_in]) map(tofrom:weight_updates[0:HWC_weight_updates])
+#pragma omp target teams distribute private(j,k) collapse(2) map(to:input[0:HWC_in], delta_in[0:HWC_delta_in]) map(tofrom:weight_updates[0:HWC_weight_updates]) device(dev_id)
 {
     for (i = 0; i < M; i++) {
         //for (k = 0; k < batch; k++) {
@@ -55,7 +55,7 @@ void connect_backward(int batch, int N, int M, float *delta_in, float *input, fl
 } // target region 1
 
     // gemm2
-#pragma omp target teams distribute parallel for private(j,k) collapse(2) map(to:delta_in[0:HWC_delta_in], weights[0:HWC_weight]) map(tofrom:delta_out[0:HWC_delta_out])
+#pragma omp target teams distribute parallel for private(j,k) collapse(2) map(to:delta_in[0:HWC_delta_in], weights[0:HWC_weight]) map(tofrom:delta_out[0:HWC_delta_out]) device(dev_id)
 {    
     for (i = 0; i < batch; i++) {
         //for (k = 0; k < M; k++) {
