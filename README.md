@@ -21,7 +21,7 @@ export LD_LIBRARY_PATH=/home/kyan2/llvm-15.x-install/lib:$LD_LIBRARY_PATH
 ```
 For rest of the tests, we change the `<batches>` to be 4, 8, 16, 40, 60, and 80.
 
-# ====================================================== #
+## previous version
 Prepared for WACCPD'22 which is a workshop of SC'22
 
 #### Environment
