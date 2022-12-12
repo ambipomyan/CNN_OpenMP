@@ -1,4 +1,27 @@
 # CNN_OpenMP
+Prepared for PMAM'23 which is a workshop of PPoPP'23
+
+#### Environment
+```
+CPU:         Dual-CPU AMD EPYC Milan 7413 24-Core/48-Threads, 2.55GHz
+Memory:      512GB 3200MHz EC REG Memory
+GPU:         4 NVIDIA A100 Ampere 40 GB GPU - PCIe 4.0
+OS:          Ubuntu 20.04
+Compilers:   Clang/LLVM 15.0 with OpenMP GPU offloading support
+CUDAToolkit: 11.2
+cuDNN:       8.1.1
+OpenCV:      4.3.0
+```
+
+#### Compile and Run
+```
+make
+export LD_LIBRARY_PATH=/home/kyan2/llvm-15.x-install/lib:$LD_LIBRARY_PATH
+./main 60000 10000 60 100 1
+```
+For rest of the tests, we change the `<batches>` to be 4, 8, 16, 40, 60, and 80.
+
+# ====================================================== #
 Prepared for WACCPD'22 which is a workshop of SC'22
 
 #### Environment
