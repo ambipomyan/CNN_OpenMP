@@ -13,6 +13,8 @@
 
 
 void conv(int M, int K, int N, int batch, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, float *weights, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     // code adapted from: https://gist.github.com/odashi/1c20ba90388cf02330e1b95963d78039
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
@@ -135,6 +137,8 @@ void conv(int batch, int M, int K, int N, int channels_col, int height_col, int 
  */
 
 void bias(int batch, int M, int N, float *output, float *biases, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
@@ -189,6 +193,8 @@ void bias(int batch, int M, int N, float *output, float *biases) {
 */
 
 void relu(int batch, int M, int N, float *output, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     // code adapted from: http://www.goldsborough.me/cuda/ml/cudnn/c++/2017/10/01/14-37-23-convolutions_with_cudnn/
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
@@ -234,6 +240,8 @@ void relu(int batch, int M, int N, float *output) {
 */
 
 void max_pool(int batch, int height_out, int width_out, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *output, int *indexes, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     // code adapted from: https://gist.github.com/samskalicky/b9e80e5bbe558329ba2c2b02f6fb43db
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
@@ -394,6 +402,8 @@ void skip_connection(int batch, int M, int N, float *input, float *output) {
  */
 
 void softmax(int batch, int N, float *input, float *output, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
@@ -459,6 +469,8 @@ void softmax(int batch, int N, float *input, float *output) {
  */
 
 void softmax_backward(int batch, int N, float *input, float *output, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
@@ -505,6 +517,8 @@ void softmax_backward(int batch, int N, float *input, float *output) {
 */
 
 void relu_backward(int batch, int N, float *output, float *delta, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
@@ -558,6 +572,8 @@ void relu_backward(int batch, int N, float *output, float *delta) {
 */
 
 void bias_backward(int batch, int N, int M, float *input, float *output, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
@@ -608,6 +624,8 @@ void bias_backward(int batch, int N, int M, float *input, float *output) {
  */
 
 void max_pool_backward(int batch, int N, int M, int height_out, int width_out, int ksize, int stride, int channels, int height, int width, int pad, int *indexes, float *delta_in, float *delta_out, float *input, float *output, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
@@ -683,6 +701,8 @@ void max_pool_backward(int batch, int N, int M, int height_out, int width_out, i
 */
 
 void conv_backward(int batch, int M, int K, int N, int channels_col, int height_col, int width_col, int ksize, int stride, int channels, int height, int width, int pad, float *input, float *delta_in, float *weight_updates, float *delta_out, float *weights, int dev_id, int num_dev) {
+    cudaSetDevice(dev_id);
+
     cudnnHandle_t handle_;
     cudnnCreate(&handle_);
 
