@@ -34,12 +34,16 @@ int main (int argc, char **argv) {
     int batch = training_volume/training_batch;
 
     // set parameter for network
-    int img_h = 28;
-    int img_w = 28;
+    //int img_h = 28;
+    //int img_w = 28;
+    //int img_c = 1;
+    int img_h = 200;
+    int img_w = 200;
     int img_c = 1;
     int img_n = training_volume;
     int img_m = predicting_volume;
-    int img_total = 70000;
+    //int img_total = 70000;
+    int img_total = 13150;
     if (img_n+img_m > img_total) return 0;
     int n_classes = 10; // "0" - "9"
     int n_layers = (1+1)*2+3+1; // conv1->pool1->conv2->pool2->connect1->connect2->connect3->Softmax
@@ -423,22 +427,29 @@ int main (int argc, char **argv) {
     
     // load data
     printf("LOAD DATA:\n");
-    printf("training datasets:   ../MNIST/train, %d images\n", img_n);
-    printf("predicting datasets: ../MNIST/test,  %d images\n", img_m);
-    
+    //printf("training datasets:   ../MNIST/train, %d images\n", img_n);
+    //printf("predicting datasets: ../MNIST/test,  %d images\n", img_m);
+    printf("training datasets:   ../OpenMP_CNN_DATA/train, %d images\n", img_n);
+    printf("predicting datasets: ../OpenMP_CNN_DATA/test,  %d images\n", img_m);
+
+/*    
     img_h = 28;
     img_w = 28;
     img_c = 1;
+ */   
+    img_h = 200;
+    img_w = 200;
+    img_c = 1;
     
     // get file list
-    char img_files[img_n+img_m][32];
+    char img_files[img_n+img_m][64];
     
     DIR *d;
     struct dirent *dir;
     
     int count;
     const char *train_dir[10], *test_dir[10];
-    
+/*    
     train_dir[0] = "../MNIST/train/0/";
     train_dir[1] = "../MNIST/train/1/";
     train_dir[2] = "../MNIST/train/2/";
@@ -460,6 +471,28 @@ int main (int argc, char **argv) {
     test_dir[7] = "../MNIST/test/7/";
     test_dir[8] = "../MNIST/test/8/";
     test_dir[9] = "../MNIST/test/9/";
+ */
+    train_dir[0] = "../OpenMP_CNN_DATA/train/0/";
+    train_dir[1] = "../OpenMP_CNN_DATA/train/1/";
+    train_dir[2] = "../OpenMP_CNN_DATA/train/2/";
+    train_dir[3] = "../OpenMP_CNN_DATA/train/3/";
+    train_dir[4] = "../OpenMP_CNN_DATA/train/4/";
+    train_dir[5] = "../OpenMP_CNN_DATA/train/5/";
+    train_dir[6] = "../OpenMP_CNN_DATA/train/6/";
+    train_dir[7] = "../OpenMP_CNN_DATA/train/7/";
+    train_dir[8] = "../OpenMP_CNN_DATA/train/8/";
+    train_dir[9] = "../OpenMP_CNN_DATA/train/9/";
+
+    test_dir[0] = "../OpenMP_CNN_DATA/test/0/";
+    test_dir[1] = "../OpenMP_CNN_DATA/test/1/";
+    test_dir[2] = "../OpenMP_CNN_DATA/test/2/";
+    test_dir[3] = "../OpenMP_CNN_DATA/test/3/";
+    test_dir[4] = "../OpenMP_CNN_DATA/test/4/";
+    test_dir[5] = "../OpenMP_CNN_DATA/test/5/";
+    test_dir[6] = "../OpenMP_CNN_DATA/test/6/";
+    test_dir[7] = "../OpenMP_CNN_DATA/test/7/";
+    test_dir[8] = "../OpenMP_CNN_DATA/test/8/";
+    test_dir[9] = "../OpenMP_CNN_DATA/test/9/";
 
     MATRIX *X, *y;
     X = (MATRIX *)malloc(sizeof(MATRIX));
@@ -522,14 +555,12 @@ int main (int argc, char **argv) {
 	}
         closedir(d);
     }
-   
-   /* 
+/*   
     printf("check image list:\n");
     for (int i = 0; i < img_n+img_m; i++) {
         printf("%s\n", img_files[i]);
     }
-    */
-
+ */
     // timer
     double tmp_total_epoch;
     double tmp, tmp_forward, tmp_backward, tmp_update, tmp_total_batch;
@@ -559,8 +590,7 @@ int main (int argc, char **argv) {
 
     time_io_read = read_timer_ms() - tmp;
     printf("io_read: %lf\n", time_io_read);
-
-   /*
+/*
     printf("check imgs: \n");
     for (int i = 0; i < img_n+img_m; i++) {
         printf("#%d\n", i);
@@ -572,8 +602,8 @@ int main (int argc, char **argv) {
         }
         printf("\n");
     }
-    */
 
+ */
     /*
     printf("check labels: \n");
     for (int i = 0; i < img_n+img_m; i++) {
