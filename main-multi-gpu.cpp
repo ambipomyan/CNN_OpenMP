@@ -423,8 +423,8 @@ int main (int argc, char **argv) {
     
     // load data
     printf("LOAD DATA:\n");
-    printf("training datasets:   MNIST/train, %d images\n", img_n);
-    printf("predicting datasets: MNIST/test,  %d images\n", img_m);
+    printf("training datasets:   ../MNIST/train, %d images\n", img_n);
+    printf("predicting datasets: ../MNIST/test,  %d images\n", img_m);
     
     img_h = 28;
     img_w = 28;
@@ -439,27 +439,27 @@ int main (int argc, char **argv) {
     int count;
     const char *train_dir[10], *test_dir[10];
     
-    train_dir[0] = "MNIST/train/0/";
-    train_dir[1] = "MNIST/train/1/";
-    train_dir[2] = "MNIST/train/2/";
-    train_dir[3] = "MNIST/train/3/";
-    train_dir[4] = "MNIST/train/4/";
-    train_dir[5] = "MNIST/train/5/";
-    train_dir[6] = "MNIST/train/6/";
-    train_dir[7] = "MNIST/train/7/";
-    train_dir[8] = "MNIST/train/8/";
-    train_dir[9] = "MNIST/train/9/";
+    train_dir[0] = "../MNIST/train/0/";
+    train_dir[1] = "../MNIST/train/1/";
+    train_dir[2] = "../MNIST/train/2/";
+    train_dir[3] = "../MNIST/train/3/";
+    train_dir[4] = "../MNIST/train/4/";
+    train_dir[5] = "../MNIST/train/5/";
+    train_dir[6] = "../MNIST/train/6/";
+    train_dir[7] = "../MNIST/train/7/";
+    train_dir[8] = "../MNIST/train/8/";
+    train_dir[9] = "../MNIST/train/9/";
     
-    test_dir[0] = "MNIST/test/0/";
-    test_dir[1] = "MNIST/test/1/";
-    test_dir[2] = "MNIST/test/2/";
-    test_dir[3] = "MNIST/test/3/";
-    test_dir[4] = "MNIST/test/4/";
-    test_dir[5] = "MNIST/test/5/";
-    test_dir[6] = "MNIST/test/6/";
-    test_dir[7] = "MNIST/test/7/";
-    test_dir[8] = "MNIST/test/8/";
-    test_dir[9] = "MNIST/test/9/";
+    test_dir[0] = "../MNIST/test/0/";
+    test_dir[1] = "../MNIST/test/1/";
+    test_dir[2] = "../MNIST/test/2/";
+    test_dir[3] = "../MNIST/test/3/";
+    test_dir[4] = "../MNIST/test/4/";
+    test_dir[5] = "../MNIST/test/5/";
+    test_dir[6] = "../MNIST/test/6/";
+    test_dir[7] = "../MNIST/test/7/";
+    test_dir[8] = "../MNIST/test/8/";
+    test_dir[9] = "../MNIST/test/9/";
 
     MATRIX *X, *y;
     X = (MATRIX *)malloc(sizeof(MATRIX));
