@@ -679,7 +679,7 @@ int main (int argc, char **argv) {
             //int dev_id = i_batch%num_dev;
 	    //int dev_id = omp_get_device_num();
 	    //printf("- data copy batch%d, device id:%d -\n", i_batch, dev_id);
-	    int index = i_batch*batch/num_dev;
+	    int index = i_batch*batch;
 	    
 	    network->input = X->vals+index*X->ncols;
             network->truth = y->vals+index*y->ncols;
