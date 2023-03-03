@@ -512,7 +512,7 @@ int main (int argc, char **argv) {
     
     // training data
     for (int i = 0; i < 10; i++) {
-        d = opendir(train_dir[i]);
+        d = opendir(train_dir[i]); //printf("%s\n", train_dir[i]);
         while ((dir = readdir(d)) != NULL && count < img_n) {
             if (strcmp(dir->d_name, "..") != 0 && strcmp(dir->d_name, ".") != 0) {
                 // file list
@@ -536,7 +536,7 @@ int main (int argc, char **argv) {
 
     // testing data
     for (int i = 0; i < 10; i++) {
-        d = opendir(test_dir[i]);
+        d = opendir(test_dir[i]); //printf("%s\n", test_dir[i]);
         while ((dir = readdir(d)) != NULL && count < img_n+img_m) {
 	    if (strcmp(dir->d_name, "..") != 0 && strcmp(dir->d_name, ".") != 0) {
                 // file list
@@ -578,7 +578,7 @@ int main (int argc, char **argv) {
     // read images from file: pixels 0-255
     Mat src;
     for (int i = 0; i < img_n+img_m; i++) {
-        src = imread(img_files[i], IMREAD_GRAYSCALE);
+        src = imread(img_files[i], IMREAD_GRAYSCALE); //printf("%s\n", img_files[i]);
         for (int p = 0; p < img_h; p++) {
             for (int q = 0; q < img_w; q++) {
                 X->vals[i*img_h*img_w+p*img_w+q] = (float)src.data[p*img_w+q];
