@@ -472,27 +472,27 @@ int main (int argc, char **argv) {
     test_dir[8]  = "../MNIST/test/8/";
     test_dir[9]  = "../MNIST/test/9/";
  */
-    train_dir[0] = "../ImgNet/train/0/";
-    train_dir[1] = "../ImgNet/train/1/";
-    train_dir[2] = "../ImgNet/train/2/";
-    train_dir[3] = "../ImgNet/train/3/";
-    train_dir[4] = "../ImgNet/train/4/";
-    train_dir[5] = "../ImgNet/train/5/";
-    train_dir[6] = "../ImgNet/train/6/";
-    train_dir[7] = "../ImgNet/train/7/";
-    train_dir[8] = "../ImgNet/train/8/";
-    train_dir[9] = "../ImgNet/train/9/";
+    train_dir[0] = "../ImageNet/train/0/";
+    train_dir[1] = "../ImageNet/train/1/";
+    train_dir[2] = "../ImageNet/train/2/";
+    train_dir[3] = "../ImageNet/train/3/";
+    train_dir[4] = "../ImageNet/train/4/";
+    train_dir[5] = "../ImageNet/train/5/";
+    train_dir[6] = "../ImageNet/train/6/";
+    train_dir[7] = "../ImageNet/train/7/";
+    train_dir[8] = "../ImageNet/train/8/";
+    train_dir[9] = "../ImageNet/train/9/";
 
-    test_dir[0]  = "../ImgNet/test/0/";
-    test_dir[1]  = "../ImgNet/test/1/";
-    test_dir[2]  = "../ImgNet/test/2/";
-    test_dir[3]  = "../ImgNet/test/3/";
-    test_dir[4]  = "../ImgNet/test/4/";
-    test_dir[5]  = "../ImgNet/test/5/";
-    test_dir[6]  = "../ImgNet/test/6/";
-    test_dir[7]  = "../ImgNet/test/7/";
-    test_dir[8]  = "../ImgNet/test/8/";
-    test_dir[9]  = "../ImgNet/test/9/";
+    test_dir[0]  = "../ImageNet/test/0/";
+    test_dir[1]  = "../ImageNet/test/1/";
+    test_dir[2]  = "../ImageNet/test/2/";
+    test_dir[3]  = "../ImageNet/test/3/";
+    test_dir[4]  = "../ImageNet/test/4/";
+    test_dir[5]  = "../ImageNet/test/5/";
+    test_dir[6]  = "../ImageNet/test/6/";
+    test_dir[7]  = "../ImageNet/test/7/";
+    test_dir[8]  = "../ImageNet/test/8/";
+    test_dir[9]  = "../ImageNet/test/9/";
 
     MATRIX *X, *y;
     X = (MATRIX *)malloc(sizeof(MATRIX));
