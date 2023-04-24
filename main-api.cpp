@@ -51,188 +51,39 @@ int main (int argc, char **argv) {
     // conv1
     printf("conv1:    ");
     add_convolutional_layer(network, 0, 32, 3, 1, 1, img_h, img_w, img_c, batch);
-    
     // pool1
     printf("pool1:    ");
     add_pooling_layer(network, 1, 2, 2, 1, MAXPOOL, network->layers[0]->out_h, network->layers[0]->out_w, network->layers[0]->out_c, batch);
-    //printf("output size: %d*%d*%d*%d = %d\n", img_h, img_w, img_c, layer1->batch, img_h*img_w*img_c*layer1->batch);
-    
     // conv2
     printf("conv2:    ");
     add_convolutional_layer(network, 2, 64, 3, 1, 1, network->layers[1]->out_h, network->layers[1]->out_w, network->layers[1]->out_w, batch);
-    
     //pool2
     printf("pool2:    ");
     add_pooling_layer(network, 3, 2, 2, 1, MAXPOOL, network->layers[2]->out_h, network->layers[2]->out_w, network->layers[2]->out_c, batch);
-    /*
-    size    = 2;
-    stride  = 2;
-    padding = 1;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("filter size: %d, stride: %d, padding: %d\n", size, stride, padding);
-    
-    LAYER *layer3;
-    layer3 = (LAYER *)malloc(sizeof(LAYER));
-    layer3->layer_type = MAXPOOL;
-    
-    layer3->batch   = batch;
-    layer3->h       = img_h;
-    layer3->w       = img_w;
-    layer3->c       = img_c;
-    layer3->size    = size;
-    layer3->stride  = stride;
-    layer3->padding = padding;
-    
-    layer3->out_h   = (layer3->h+2*layer3->padding)/layer3->stride;
-    layer3->out_w   = (layer3->w+2*layer3->padding)/layer3->stride;
-    layer3->out_c   = layer3->c;
-    layer3->outputs = layer3->out_h*layer3->out_w*layer3->out_c;
-    layer3->inputs  = layer3->w*layer3->h*layer3->c;
-
-    layer3->indexes = (int   *)malloc(layer3->batch*layer3->outputs*sizeof(int));
-    layer3->output  = (float *)malloc(layer3->batch*layer3->outputs*sizeof(float));
-    layer3->delta   = (float *)malloc(layer3->batch*layer3->outputs*sizeof(float));
-    
-    network->layers[3] = layer3;
-     */
-    img_h = 1;
-    img_w = 1;
-    img_c = network->layers[3]->out_h*network->layers[3]->out_w*network->layers[3]->out_c;
-    
-    int n;
-    float scale;
-    
     //connect1
     printf("connect1: ");
-    int l_outputs = 1024;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("output size: %d, activation: RELU\n", l_outputs);
-    
-    LAYER *layer4;
-    layer4 = (LAYER *)malloc(sizeof(LAYER));
-    layer4->layer_type = CONNECTED;
-    layer4->activation = RELU;
-    
-    layer4->batch   = batch;
-    layer4->h       = img_h;
-    layer4->w       = img_w;
-    layer4->c       = img_c;
-    layer4->inputs  = layer4->h*layer4->w*layer4->c;
-    layer4->outputs = l_outputs;
-
-    layer4->output = (float *)malloc(layer4->batch*layer4->outputs*sizeof(float));
-    layer4->delta  = (float *)malloc(layer4->batch*layer4->outputs*sizeof(float));
-
-    layer4->weights        = (float *)malloc(layer4->outputs*layer4->inputs*sizeof(float));
-    layer4->weight_updates = (float *)malloc(layer4->outputs*layer4->inputs*sizeof(float));
-    layer4->biases         = (float *)malloc(layer4->outputs*sizeof(float));
-    layer4->bias_updates   = (float *)malloc(layer4->outputs*sizeof(float));
-    
-    scale = sqrt(2./layer4->inputs);
-    for(int i = 0; i < layer4->outputs*layer4->inputs; i++) {layer4->weights[i] = scale*rand_uniform(-1, 1);}
-    //for(int i = 0; i < layer4->outputs*layer4->inputs; i++) {printf("%f\n", layer4->weights[i]);}
-    for(int i = 0; i < layer4->outputs; i++)                {layer4->biases[i] = 0;}
-    
-    layer4->out_h = 1;
-    layer4->out_w = 1;
-    layer4->out_c = l_outputs;
-    
-    network->layers[4] = layer4;
-    
-    img_h = layer4->out_h;
-    img_w = layer4->out_w;
-    img_c = layer4->out_c;
-    
+    add_connected_layer(network, 4, 1024, 1, 1, network->layers[3]->out_h*network->layers[3]->out_w*network->layers[3]->out_c, batch);
     //connect2
     printf("connect2: ");
-    l_outputs = 84;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("output size: %d, activation: RELU\n", l_outputs);
-    
-    LAYER *layer5;
-    layer5 = (LAYER *)malloc(sizeof(LAYER));
-    layer5->layer_type = CONNECTED;
-    layer5->activation = RELU;
-    
-    layer5->batch   = batch;
-    layer5->h       = img_h;
-    layer5->w       = img_w;
-    layer5->c       = img_c;
-    layer5->inputs  = layer5->h*layer5->w*layer5->c;
-    layer5->outputs = l_outputs;
-
-    layer5->output = (float *)malloc(layer5->batch*layer5->outputs*sizeof(float));
-    layer5->delta  = (float *)malloc(layer5->batch*layer5->outputs*sizeof(float));
-
-    layer5->weights        = (float *)malloc(layer5->outputs*layer5->inputs*sizeof(float));
-    layer5->weight_updates = (float *)malloc(layer5->outputs*layer5->inputs*sizeof(float));
-    layer5->biases         = (float *)malloc(layer5->outputs*sizeof(float));
-    layer5->bias_updates   = (float *)malloc(layer5->outputs*sizeof(float));
-    
-    scale = sqrt(2./layer5->inputs);
-    for(int i = 0; i < layer5->outputs*layer5->inputs; i++) {layer5->weights[i] = scale*rand_uniform(-1, 1);}
-    for(int i = 0; i < layer5->outputs; i++)                {layer5->biases[i] = 0;}
-    
-    layer5->out_h = 1;
-    layer5->out_w = 1;
-    layer5->out_c = l_outputs;
-    
-    network->layers[5] = layer5;
-    
-    img_h = layer5->out_h;
-    img_w = layer5->out_w;
-    img_c = layer5->out_c;
-    
+    add_connected_layer(network, 5, 84, 1, 1, 1024, batch);
     //connect3
     printf("connect3: ");
-    l_outputs = n_classes;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("output size: %d, activation: - \n", l_outputs);
+    add_connected_layer(network, 6, n_classes, 1, 1, 84, batch);
     
-    LAYER *layer6;
-    layer6 = (LAYER *)malloc(sizeof(LAYER));
-    layer6->layer_type = CONNECTED;
-    layer6->activation = RELU;
-    
-    layer6->batch   = batch;
-    layer6->h       = img_h;
-    layer6->w       = img_w;
-    layer6->c       = img_c;
-    layer6->inputs  = layer6->h*layer6->w*layer6->c;
-    layer6->outputs = l_outputs;
-
-    layer6->output = (float *)malloc(layer6->batch*layer6->outputs*sizeof(float));
-    layer6->delta  = (float *)malloc(layer6->batch*layer6->outputs*sizeof(float));
-
-    layer6->weights        = (float *)malloc(layer6->outputs*layer6->inputs*sizeof(float));
-    layer6->weight_updates = (float *)malloc(layer6->outputs*layer6->inputs*sizeof(float));
-    layer6->biases         = (float *)malloc(layer6->outputs*sizeof(float));
-    layer6->bias_updates   = (float *)malloc(layer6->outputs*sizeof(float));
-    
-    scale = sqrt(2./layer6->inputs);
-    for(int i = 0; i < layer6->outputs*layer6->inputs; i++) {layer6->weights[i] = scale*rand_uniform(-1, 1);}
-    for(int i = 0; i < layer6->outputs; i++)                {layer6->biases[i] = 0;}
-    
-    layer6->out_h = 1;
-    layer6->out_w = 1;
-    layer6->out_c = l_outputs;
-    
-    network->layers[6] = layer6;
-    
-    img_h = layer6->out_h;
-    img_w = layer6->out_w;
-    img_c = layer6->out_c;
+    img_h = 1;
+    img_w = 1;
+    img_c = n_classes;
     
     //softmax
     printf("softmax:  ");
-    printf("number of classes: %d\n", l_outputs);
+    printf("number of classes: %d\n", n_classes);
     
     LAYER *layer;
     layer = (LAYER *)malloc(sizeof(LAYER));
     layer->layer_type = SOFTMAX;
     
     layer->batch   = batch;
-    layer->inputs  = l_outputs;
+    layer->inputs  = n_classes;
     layer->outputs = layer->inputs;
     
     layer->loss   = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
@@ -427,9 +278,10 @@ int main (int argc, char **argv) {
             
 // UPDATE   
 	    // update bias and weights
-            float p1 = network->learning_rate/network->batch;
-            float p2 = -network->decay*network->batch;
-            float p3 = network->momentum;
+	    int n;
+	    float p1 = network->learning_rate/network->batch;
+	    float p2 = -network->decay*network->batch;
+	    float p3 = network->momentum;
 	    
 	    // conv1 update
 	    conv_update(network->layers[0]->n, network->layers[0]->biases, network->layers[0]->bias_updates, network->layers[0]->nweights, network->layers[0]->weights, network->layers[0]->weight_updates, p1, p2, p3);

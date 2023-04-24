@@ -422,3 +422,35 @@ void add_pooling_layer(NETWORK *network, int id, int size, int stride, int paddi
     
     network->layers[id] = layer1;
 }
+
+void add_connected_layer(NETWORK *network, int id, int l_outputs, int img_h, int img_w, int img_c, int batch) {
+    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
+    printf("output size: %d, activation: RELU\n", l_outputs);
+    
+    LAYER *layer4;
+    layer4 = (LAYER *)malloc(sizeof(LAYER));
+    layer4->layer_type = CONNECTED;
+    layer4->activation = RELU;
+    
+    layer4->batch   = batch;
+    layer4->h       = img_h;
+    layer4->w       = img_w;
+    layer4->c       = img_c;
+    layer4->inputs  = layer4->h*layer4->w*layer4->c;
+    layer4->outputs = l_outputs;
+
+    layer4->output = (float *)malloc(layer4->batch*layer4->outputs*sizeof(float));
+    layer4->delta  = (float *)malloc(layer4->batch*layer4->outputs*sizeof(float));
+
+    layer4->weights        = (float *)malloc(layer4->outputs*layer4->inputs*sizeof(float));
+    layer4->weight_updates = (float *)malloc(layer4->outputs*layer4->inputs*sizeof(float));
+    layer4->biases         = (float *)malloc(layer4->outputs*sizeof(float));
+    layer4->bias_updates   = (float *)malloc(layer4->outputs*sizeof(float));
+    
+    float scale = sqrt(2./layer4->inputs);
+    for(int i = 0; i < layer4->outputs*layer4->inputs; i++) {layer4->weights[i] = scale*rand_uniform(-1, 1);}
+    //for(int i = 0; i < layer4->outputs*layer4->inputs; i++) {printf("%f\n", layer4->weights[i]);}
+    for(int i = 0; i < layer4->outputs; i++)                {layer4->biases[i] = 0;}
+    
+    network->layers[id] = layer4;
+}
