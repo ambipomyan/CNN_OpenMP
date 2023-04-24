@@ -42,6 +42,7 @@ int main (int argc, char **argv) {
     int n_classes = 10; // "0" - "9"
     int n_layers = (1+1)*2+3+1; // conv1->pool1->conv2->pool2->connect1->connect2->connect3->Softmax
     
+// NETWORK    
     // load network
     printf("LOAD NETWORK:\n");
     printf("number of layers: %d, number of classes: %d\n", n_layers, n_classes);
@@ -72,15 +73,14 @@ int main (int argc, char **argv) {
     //softmax
     printf("softmax:  ");
     add_softmax_layer(network, 7, n_classes, 1, 1, n_classes, batch);
-    
+
+// DATA 
     // load data
     printf("LOAD DATA:\n");
     printf("training datasets:   ../MNIST/train, %d images\n", img_n);
     printf("predicting datasets: ../MNIST/test,  %d images\n", img_m);
-
-    img_h = 28;
-    img_w = 28;
-    img_c = 1;
+    
+    MATRIX *X, *y;
     
     // get file list
     char img_files[img_n+img_m][64];
@@ -113,7 +113,6 @@ int main (int argc, char **argv) {
     test_dir[8]  = "../MNIST/test/8/";
     test_dir[9]  = "../MNIST/test/9/";
     
-    MATRIX *X, *y;
     X = (MATRIX *)malloc(sizeof(MATRIX));
     y = (MATRIX *)malloc(sizeof(MATRIX));
     
@@ -175,7 +174,6 @@ int main (int argc, char **argv) {
         closedir(d);
     }
 
-
 // INPUT    
     // read images from file: pixels 0-255
     Mat src;
@@ -198,19 +196,15 @@ int main (int argc, char **argv) {
     network->learning_rate = 0.0001;
     network->momentum      = 0.9;
     network->decay         = 0.0001;
+    float p1 = network->learning_rate/network->batch;
+    float p2 = -network->decay*network->batch;
+    float p3 = network->momentum;
     
     printf("number of training images: %d, batch: %d, epoch: %d\n", training_volume, training_batch, training_epoch);
     printf("training config: batch size: %d, learning rate: %f, momentum: %f, decay: %f\n", network->batch, network->learning_rate, network->momentum, network->decay);
 
     // if there is only one device, then this part is of serial processing
     printf("number of devices:%d\n", num_dev);
-
-    // model
-    int HWC_conv1_weights = network->layers[0]->n*network->layers[0]->size*network->layers[0]->size*network->layers[0]->c;
-    int HWC_conv2_weights = network->layers[2]->n*network->layers[2]->size*network->layers[2]->size*network->layers[2]->c;
-    int HWC_connect1_weights = network->layers[4]->inputs*network->layers[4]->outputs;
-    int HWC_connect2_weights = network->layers[5]->inputs*network->layers[5]->outputs;
-    int HWC_connect3_weights = network->layers[6]->inputs*network->layers[6]->outputs;
 
     // i am lucky
     for (int i_epoch = 0; i_epoch < training_epoch; i_epoch++) {
@@ -254,43 +248,30 @@ int main (int argc, char **argv) {
             backward_convolutional_layer(network->layers[0], network->layers0, network->layers[0]->delta, network->layers0->delta, 1, dev_id, num_dev);
             
 // UPDATE   
-	    // update bias and weights
-	    int n;
-	    float p1 = network->learning_rate/network->batch;
-	    float p2 = -network->decay*network->batch;
-	    float p3 = network->momentum;
-	    
 	    // conv1 update
 	    conv_update(network->layers[0]->n, network->layers[0]->biases, network->layers[0]->bias_updates, network->layers[0]->nweights, network->layers[0]->weights, network->layers[0]->weight_updates, p1, p2, p3);
-
     	    // conv2 update
     	    conv_update(network->layers[2]->n, network->layers[2]->biases, network->layers[2]->bias_updates, network->layers[2]->nweights, network->layers[2]->weights, network->layers[2]->weight_updates, p1, p2, p3);
-
-	    // init
-	    n =  network->layers[4]->inputs*network->layers[4]->outputs;
-	    
             // connect1 update
-	    connect_update(network->layers[4]->outputs, network->layers[4]->biases, network->layers[4]->bias_updates, n, network->layers[4]->weights, network->layers[4]->weight_updates, p1, p2, p3);
-           
-	    // init
-	    n =  network->layers[5]->inputs*network->layers[5]->outputs;
-
+	    connect_update(network->layers[4]->outputs, network->layers[4]->biases, network->layers[4]->bias_updates, network->layers[4]->inputs*network->layers[4]->outputs, network->layers[4]->weights, network->layers[4]->weight_updates, p1, p2, p3);
 	    // connect2 update
-	    connect_update(network->layers[5]->outputs, network->layers[5]->biases, network->layers[5]->bias_updates, n, network->layers[5]->weights, network->layers[5]->weight_updates, p1, p2, p3);
-            
-	    // init
-	    n =  network->layers[6]->inputs*network->layers[6]->outputs;
-
+	    connect_update(network->layers[5]->outputs, network->layers[5]->biases, network->layers[5]->bias_updates, network->layers[5]->inputs*network->layers[5]->outputs, network->layers[5]->weights, network->layers[5]->weight_updates, p1, p2, p3);
 	    // connect3 update
-	    connect_update(network->layers[6]->outputs, network->layers[6]->biases, network->layers[6]->bias_updates, n, network->layers[6]->weights, network->layers[6]->weight_updates, p1, p2, p3);
-
+	    connect_update(network->layers[6]->outputs, network->layers[6]->biases, network->layers[6]->bias_updates, network->layers[6]->inputs*network->layers[6]->outputs, network->layers[6]->weights, network->layers[6]->weight_updates, p1, p2, p3);
         }
 
         printf("error = %f\n", network->cost);
+        
       } 
     }
 
 // OUTPUT
+    // model
+    int HWC_conv1_weights = network->layers[0]->n*network->layers[0]->size*network->layers[0]->size*network->layers[0]->c;
+    int HWC_conv2_weights = network->layers[2]->n*network->layers[2]->size*network->layers[2]->size*network->layers[2]->c;
+    int HWC_connect1_weights = network->layers[4]->inputs*network->layers[4]->outputs;
+    int HWC_connect2_weights = network->layers[5]->inputs*network->layers[5]->outputs;
+    int HWC_connect3_weights = network->layers[6]->inputs*network->layers[6]->outputs;
     // write weights to file
     int i;
     FILE *f;
