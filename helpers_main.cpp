@@ -454,3 +454,25 @@ void add_connected_layer(NETWORK *network, int id, int l_outputs, int img_h, int
     
     network->layers[id] = layer4;
 }
+
+void add_softmax_layer(NETWORK *network, int id, int n_classes, int img_h, int img_w, int img_c, int batch) {
+    printf("number of classes: %d\n", n_classes);
+    
+    LAYER *layer;
+    layer = (LAYER *)malloc(sizeof(LAYER));
+    layer->layer_type = SOFTMAX;
+    
+    layer->batch   = batch;
+    layer->inputs  = n_classes;
+    layer->outputs = layer->inputs;
+    
+    layer->loss   = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
+    layer->output = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
+    layer->delta  = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
+    layer->cost   = 0;
+    
+    network->outputs = layer->outputs;
+    network->truths  = layer->outputs;
+    
+    network->layers[id] = layer;
+}

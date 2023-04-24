@@ -31,3 +31,5 @@ void add_convolutional_layer(NETWORK *network, int id, int n, int size, int stri
 void add_pooling_layer(      NETWORK *network, int id,        int size, int stride, int padding, LAYER_TYPE layer_type, int img_h, int img_w, int img_c, int batch);
 
 void add_connected_layer(    NETWORK *network, int id, int l_outputs,                                                   int img_h, int img_w, int img_c, int batch);
+
+void add_softmax_layer(      NETWORK *network, int id, int n_classes,                                                   int img_h, int img_w, int img_c, int batch);

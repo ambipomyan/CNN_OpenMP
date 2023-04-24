@@ -69,32 +69,9 @@ int main (int argc, char **argv) {
     //connect3
     printf("connect3: ");
     add_connected_layer(network, 6, n_classes, 1, 1, 84, batch);
-    
-    img_h = 1;
-    img_w = 1;
-    img_c = n_classes;
-    
     //softmax
     printf("softmax:  ");
-    printf("number of classes: %d\n", n_classes);
-    
-    LAYER *layer;
-    layer = (LAYER *)malloc(sizeof(LAYER));
-    layer->layer_type = SOFTMAX;
-    
-    layer->batch   = batch;
-    layer->inputs  = n_classes;
-    layer->outputs = layer->inputs;
-    
-    layer->loss   = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
-    layer->output = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
-    layer->delta  = (float *)malloc(layer->inputs*layer->batch*sizeof(float));
-    layer->cost   = 0;
-    
-    network->outputs = layer->outputs;
-    network->truths  = layer->outputs;
-    
-    network->layers[7] = layer;
+    add_softmax_layer(network, 7, n_classes, 1, 1, n_classes, batch);
     
     // load data
     printf("LOAD DATA:\n");
