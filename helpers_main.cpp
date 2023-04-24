@@ -9,6 +9,34 @@
 
 #include "helpers_main.h"
 
+float rand_uniform(float min, float max) {
+    if (max < min){
+        float swap = min;
+        min = max;
+        max = swap;
+    }
+    return (rand() / (float) RAND_MAX * (max - min)) + min;
+}
+
+float rand_normal() {
+    static int haveSpare = 0;
+    static double rand1, rand2;
+
+    if(haveSpare)
+    {
+        haveSpare = 0;
+        return sqrt(rand1) * sin(rand2);
+    }
+
+    haveSpare = 1;
+
+    rand1 = rand() / ((double) RAND_MAX);
+    if(rand1 < 1e-100) rand1 = 1e-100;
+    rand1 = -2 * log(rand1);
+    rand2 = (rand() / ((double) RAND_MAX)) * 2*3.1415926535;
+
+    return sqrt(rand1) * cos(rand2);
+}
 
 /****** forward ******/
 
@@ -284,3 +312,84 @@ NETWORK *load_network(int n_layers, int img_h, int img_w, int img_c, int n_class
     return network;
 }
 
+void add_convolutional_layer(NETWORK *network, int id, int n, int size, int stride, int padding, int img_h, int img_w, int img_c, int batch) {
+    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
+    printf("number of filter: %d, filter size: %d, stride: %d, padding: %d, activation: RELU\n", n, size, stride, padding);
+    
+    LAYER *layer0;
+    layer0 = (LAYER *)malloc(sizeof(LAYER));
+    layer0->layer_type = CONVOLUTIONAL;
+    layer0->activation = RELU;
+    
+    layer0->batch   = batch;
+    layer0->h       = img_h;
+    layer0->w       = img_w;
+    layer0->c       = img_c;
+    layer0->n       = n;
+    layer0->size    = size;
+    layer0->stride  = stride;
+    layer0->padding = padding;
+    
+    layer0->nweights = img_c*n*size*size;
+    layer0->nbiases  = n;
+    
+    layer0->weights        = (float *)malloc(layer0->nweights*sizeof(float));
+    layer0->weight_updates = (float *)malloc(layer0->nweights*sizeof(float));
+    layer0->biases         = (float *)malloc(layer0->nbiases*sizeof(float));
+    layer0->bias_updates   = (float *)malloc(layer0->nbiases*sizeof(float));
+    
+    float scale = sqrt(2./(layer0->nweights/layer0->nbiases));
+    for(int i = 0; i < layer0->nweights; i++) {layer0->weights[i] = scale*rand_normal();}
+    //for(int i = 0; i < layer0->nweights; i++) {printf("%f\n", layer0->weights[i]);}
+    for(int i = 0; i < layer0->nbiases;  i++) {layer0->biases[i] = 0;}
+    
+    layer0->out_h   = (layer0->h+2*layer0->padding-layer0->size)/layer0->stride+1;
+    layer0->out_w   = (layer0->w+2*layer0->padding-layer0->size)/layer0->stride+1;
+    layer0->out_c   = layer0->n;
+    layer0->outputs = layer0->out_h*layer0->out_w*layer0->out_c;
+    layer0->inputs  = layer0->w*layer0->h*layer0->c;
+    
+    layer0->output = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
+    layer0->delta  = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
+    
+    network->layers[id] = layer0;
+
+    // layers0
+    if (id==0) {
+        LAYER *layers0;
+        layers0 = (LAYER *)malloc(sizeof(LAYER));
+        layers0->layer_type = CONVOLUTIONAL;
+        layers0->activation = RELU;
+
+        layers0->batch   = batch;
+        layers0->h       = img_h;
+        layers0->w       = img_w;
+        layers0->c       = img_c;
+        layers0->n       = n;
+        layers0->size    = size;
+        layers0->stride  = stride;
+        layers0->padding = padding;
+
+        layers0->nweights = img_c*n*size*size;
+        layers0->nbiases  = n;
+
+        layers0->weights        = (float *)malloc(layer0->nweights*sizeof(float));
+        layers0->weight_updates = (float *)malloc(layer0->nweights*sizeof(float));
+        layers0->biases         = (float *)malloc(layer0->nbiases*sizeof(float));
+        layers0->bias_updates   = (float *)malloc(layer0->nbiases*sizeof(float));
+
+        for(int i = 0; i < layer0->nweights; i++) {layers0->weights[i] = scale*rand_normal();}
+        for(int i = 0; i < layer0->nbiases;  i++) {layers0->biases[i] = 0;}
+
+        layers0->out_h   = (layer0->h+2*layer0->padding-layer0->size)/layer0->stride+1;
+        layers0->out_w   = (layer0->w+2*layer0->padding-layer0->size)/layer0->stride+1;
+        layers0->out_c   = layer0->n;
+        layers0->outputs = layer0->out_h*layer0->out_w*layer0->out_c;
+        layers0->inputs  = layer0->w*layer0->h*layer0->c;
+
+        layers0->output = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
+        layers0->delta  = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
+
+        network->layers0 = layers0;
+    }
+}

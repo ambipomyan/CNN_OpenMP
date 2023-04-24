@@ -16,10 +16,6 @@
 
 using namespace cv;
 
-float rand_uniform(float min, float max);
-
-float rand_normal();
-
 
 int main (int argc, char **argv) {
     printf("- run_classifier -\n");
@@ -54,93 +50,24 @@ int main (int argc, char **argv) {
     // init layers
     // conv1
     printf("conv1:    ");
-    // filter configs
-    int n       = 32;
-    int size    = 3;
-    int stride  = 1;
-    int padding = 1;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("number of filter: %d, filter size: %d, stride: %d, padding: %d, activation: RELU\n", n, size, stride, padding);
+    add_convolutional_layer(network, 0, 32, 3, 1, 1, img_h, img_w, img_c, batch);
     
-    LAYER *layer0;
-    layer0 = (LAYER *)malloc(sizeof(LAYER));
-    layer0->layer_type = CONVOLUTIONAL;
-    layer0->activation = RELU;
     
-    layer0->batch   = batch;
-    layer0->h       = img_h;
-    layer0->w       = img_w;
-    layer0->c       = img_c;
-    layer0->n       = n;
-    layer0->size    = size;
-    layer0->stride  = stride;
-    layer0->padding = padding;
     
-    layer0->nweights = img_c*n*size*size;
-    layer0->nbiases  = n;
     
-    layer0->weights        = (float *)malloc(layer0->nweights*sizeof(float));
-    layer0->weight_updates = (float *)malloc(layer0->nweights*sizeof(float));
-    layer0->biases         = (float *)malloc(layer0->nbiases*sizeof(float));
-    layer0->bias_updates   = (float *)malloc(layer0->nbiases*sizeof(float));
     
-    float scale = sqrt(2./(layer0->nweights/layer0->nbiases));
-    for(int i = 0; i < layer0->nweights; i++) {layer0->weights[i] = scale*rand_normal();}
-    //for(int i = 0; i < layer0->nweights; i++) {printf("%f\n", layer0->weights[i]);}
-    for(int i = 0; i < layer0->nbiases;  i++) {layer0->biases[i] = 0;}
     
-    layer0->out_h   = (layer0->h+2*layer0->padding-layer0->size)/layer0->stride+1;
-    layer0->out_w   = (layer0->w+2*layer0->padding-layer0->size)/layer0->stride+1;
-    layer0->out_c   = layer0->n;
-    layer0->outputs = layer0->out_h*layer0->out_w*layer0->out_c;
-    layer0->inputs  = layer0->w*layer0->h*layer0->c;
     
-    layer0->output = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
-    layer0->delta  = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
     
-    network->layers[0] = layer0;
+    int n;
+    int size;
+    int stride;
+    int padding;
+    float scale;
     
-    img_h = layer0->out_h;
-    img_w = layer0->out_w;
-    img_c = layer0->out_c;
-
-    // layers0
-    LAYER *layers0;
-    layers0 = (LAYER *)malloc(sizeof(LAYER));
-    layers0->layer_type = CONVOLUTIONAL;
-    layers0->activation = RELU;
-
-    layers0->batch   = batch;
-    layers0->h       = img_h;
-    layers0->w       = img_w;
-    layers0->c       = img_c;
-    layers0->n       = n;
-    layers0->size    = size;
-    layers0->stride  = stride;
-    layers0->padding = padding;
-
-    layers0->nweights = img_c*n*size*size;
-    layers0->nbiases  = n;
-
-    layers0->weights        = (float *)malloc(layer0->nweights*sizeof(float));
-    layers0->weight_updates = (float *)malloc(layer0->nweights*sizeof(float));
-    layers0->biases         = (float *)malloc(layer0->nbiases*sizeof(float));
-    layers0->bias_updates   = (float *)malloc(layer0->nbiases*sizeof(float));
-
-    for(int i = 0; i < layer0->nweights; i++) {layers0->weights[i] = scale*rand_normal();}
-    for(int i = 0; i < layer0->nbiases;  i++) {layers0->biases[i] = 0;}
-
-    layers0->out_h   = (layer0->h+2*layer0->padding-layer0->size)/layer0->stride+1;
-    layers0->out_w   = (layer0->w+2*layer0->padding-layer0->size)/layer0->stride+1;
-    layers0->out_c   = layer0->n;
-    layers0->outputs = layer0->out_h*layer0->out_w*layer0->out_c;
-    layers0->inputs  = layer0->w*layer0->h*layer0->c;
-
-    layers0->output = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
-    layers0->delta  = (float *)malloc(layer0->batch*layer0->outputs*sizeof(float));
-
-    network->layers0 = layers0;
-    // layers0
+    img_h = network->layers[0]->out_h;
+    img_w = network->layers[0]->out_w;
+    img_c = network->layers[0]->out_c;
     
     // pool1
     printf("pool1:    ");
@@ -182,54 +109,11 @@ int main (int argc, char **argv) {
     
     // conv2
     printf("conv2:    ");
-    // filter configs
-    n       = 64;
-    size    = 3;
-    stride  = 1;
-    padding = 1;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("number of filter: %d, filter size: %d, stride: %d, padding: %d, activation: RELU\n", n, size, stride, padding);
-    
-    LAYER *layer2;
-    layer2 = (LAYER *)malloc(sizeof(LAYER));
-    layer2->layer_type = CONVOLUTIONAL;
-    layer2->activation = RELU;
-    
-    layer2->batch = batch;
-    layer2->h       = img_h;
-    layer2->w       = img_w;
-    layer2->c       = img_c;
-    layer2->n       = n;
-    layer2->size    = size;
-    layer2->stride  = stride;
-    layer2->padding = padding;
-    
-    layer2->nweights = img_c*n*size*size;
-    layer2->nbiases  = n;
-    
-    layer2->weights        = (float *)malloc(layer2->nweights*sizeof(float));
-    layer2->weight_updates = (float *)malloc(layer2->nweights*sizeof(float));
-    layer2->biases         = (float *)malloc(layer2->nbiases*sizeof(float));
-    layer2->bias_updates   = (float *)malloc(layer2->nbiases*sizeof(float));
-    
-    scale = sqrt(2./(layer2->nweights/layer2->nbiases));
-    for(int i = 0; i < layer2->nweights; i++) {layer2->weights[i] = scale*rand_normal();}
-    for(int i = 0; i < layer2->nbiases;  i++) {layer2->biases[i] = 0;}
-    
-    layer2->out_h   = (layer2->h+2*layer2->padding-layer2->size)/layer2->stride+1;
-    layer2->out_w   = (layer2->w+2*layer2->padding-layer2->size)/layer2->stride+1;
-    layer2->out_c   = layer2->n;
-    layer2->outputs = layer2->out_h*layer2->out_w*layer2->out_c;
-    layer2->inputs  = layer2->w*layer2->h*layer2->c;
-    
-    layer2->output = (float *)malloc(layer2->batch*layer2->outputs*sizeof(float));
-    layer2->delta  = (float *)malloc(layer2->batch*layer2->outputs*sizeof(float));
-    
-    network->layers[2] = layer2;
+    add_convolutional_layer(network, 2, 64, 3, 1, 1, img_h, img_w, img_c, batch);
         
-    img_h = layer2->out_h;
-    img_w = layer2->out_w;
-    img_c = layer2->out_c;
+    img_h = network->layers[2]->out_h;
+    img_w = network->layers[2]->out_w;
+    img_c = network->layers[2]->out_c;
     
     //pool2
     printf("pool2:    ");
@@ -600,7 +484,7 @@ int main (int argc, char **argv) {
 	    conv_update(network->layers[0]->n, network->layers[0]->biases, network->layers[0]->bias_updates, network->layers[0]->nweights, network->layers[0]->weights, network->layers[0]->weight_updates, p1, p2, p3);
 
     	    // conv2 update
-            conv_update(network->layers[2]->n, network->layers[2]->biases, network->layers[2]->bias_updates, network->layers[2]->nweights, network->layers[2]->weights, network->layers[2]->weight_updates, p1, p2, p3);
+    	    conv_update(network->layers[2]->n, network->layers[2]->biases, network->layers[2]->bias_updates, network->layers[2]->nweights, network->layers[2]->weights, network->layers[2]->weight_updates, p1, p2, p3);
 
 	    // init
 	    n =  network->layers[4]->inputs*network->layers[4]->outputs;
@@ -612,13 +496,13 @@ int main (int argc, char **argv) {
 	    n =  network->layers[5]->inputs*network->layers[5]->outputs;
 
 	    // connect2 update
-            connect_update(network->layers[5]->outputs, network->layers[5]->biases, network->layers[5]->bias_updates, n, network->layers[5]->weights, network->layers[5]->weight_updates, p1, p2, p3);
+	    connect_update(network->layers[5]->outputs, network->layers[5]->biases, network->layers[5]->bias_updates, n, network->layers[5]->weights, network->layers[5]->weight_updates, p1, p2, p3);
             
 	    // init
 	    n =  network->layers[6]->inputs*network->layers[6]->outputs;
 
 	    // connect3 update
-            connect_update(network->layers[6]->outputs, network->layers[6]->biases, network->layers[6]->bias_updates, n, network->layers[6]->weights, network->layers[6]->weight_updates, p1, p2, p3);
+	    connect_update(network->layers[6]->outputs, network->layers[6]->biases, network->layers[6]->bias_updates, n, network->layers[6]->weights, network->layers[6]->weight_updates, p1, p2, p3);
 
         }
 
@@ -651,16 +535,16 @@ int main (int argc, char **argv) {
 	forward_convolutional_layer(network->layers[0], network->layers[0], network->input,             network->layers[0]->output, 1, 0, num_dev);
 	forward_pooling_layer(      network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1, 0, num_dev);
 	forward_convolutional_layer(network->layers[1], network->layers[2], network->layers[1]->output, network->layers[2]->output, 1, 0, num_dev);
-        forward_pooling_layer(      network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1, 0, num_dev);
+	forward_pooling_layer(      network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1, 0, num_dev);
 	forward_connected_layer(    network->layers[3], network->layers[4], network->layers[3]->output, network->layers[4]->output, 1, 0, num_dev);
 	forward_connected_layer(    network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1, 0, num_dev);
-        forward_connected_layer(    network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0, 0, num_dev);
-        forward_softmax_layer(      network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output,    0, num_dev);
+	forward_connected_layer(    network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0, 0, num_dev);
+	forward_softmax_layer(      network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output,    0, num_dev);
 
         // recording!
         int N = network->layers[7]->inputs;
         //printf("N: %d\n", N);
-	int T[batch];
+        int T[batch];
         //printf("batch: %d\n", batch);
         for (int b = 0; b < network->layers[7]->batch; b++) {
             float temp_val = -FLT_MAX;
@@ -695,33 +579,4 @@ int main (int argc, char **argv) {
     free(network);
     
     return 0;
-}
-
-float rand_uniform(float min, float max) {
-    if (max < min){
-        float swap = min;
-        min = max;
-        max = swap;
-    }
-    return (rand() / (float) RAND_MAX * (max - min)) + min;
-}
-
-float rand_normal() {
-    static int haveSpare = 0;
-    static double rand1, rand2;
-
-    if(haveSpare)
-    {
-        haveSpare = 0;
-        return sqrt(rand1) * sin(rand2);
-    }
-
-    haveSpare = 1;
-
-    rand1 = rand() / ((double) RAND_MAX);
-    if(rand1 < 1e-100) rand1 = 1e-100;
-    rand1 = -2 * log(rand1);
-    rand2 = (rand() / ((double) RAND_MAX)) * 2*3.1415926535;
-
-    return sqrt(rand1) * cos(rand2);
 }
