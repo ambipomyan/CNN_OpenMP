@@ -52,71 +52,19 @@ int main (int argc, char **argv) {
     printf("conv1:    ");
     add_convolutional_layer(network, 0, 32, 3, 1, 1, img_h, img_w, img_c, batch);
     
-    
-    
-    
-    
-    
-    
-    
-    int n;
-    int size;
-    int stride;
-    int padding;
-    float scale;
-    
-    img_h = network->layers[0]->out_h;
-    img_w = network->layers[0]->out_w;
-    img_c = network->layers[0]->out_c;
-    
     // pool1
     printf("pool1:    ");
-    size    = 2;
-    stride  = 2;
-    padding = 1;
-    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
-    printf("filter size: %d, stride: %d, padding: %d\n", size, stride, padding);
-    
-    LAYER *layer1;
-    layer1 = (LAYER *)malloc(sizeof(LAYER));
-    layer1->layer_type = MAXPOOL;
-    
-    layer1->batch   = batch;
-    layer1->h       = img_h;
-    layer1->w       = img_w;
-    layer1->c       = img_c;
-    layer1->size    = size;
-    layer1->stride  = stride;
-    layer1->padding = padding;
-    
-    layer1->out_h   = (layer1->h+2*layer1->padding)/layer1->stride;
-    layer1->out_w   = (layer1->w+2*layer1->padding)/layer1->stride;
-    layer1->out_c   = layer1->c;
-    layer1->outputs = layer1->out_h*layer1->out_w*layer1->out_c;
-    layer1->inputs  = layer1->w*layer1->h*layer1->c;
-
-    layer1->indexes = (int   *)malloc(layer1->batch*layer1->outputs*sizeof(int));
-    layer1->output  = (float *)malloc(layer1->batch*layer1->outputs*sizeof(float));
-    layer1->delta   = (float *)malloc(layer1->batch*layer1->outputs*sizeof(float));
-    
-    network->layers[1] = layer1;
-    
-    img_h = layer1->out_h;
-    img_w = layer1->out_w;
-    img_c = layer1->out_c;
-    
+    add_pooling_layer(network, 1, 2, 2, 1, MAXPOOL, network->layers[0]->out_h, network->layers[0]->out_w, network->layers[0]->out_c, batch);
     //printf("output size: %d*%d*%d*%d = %d\n", img_h, img_w, img_c, layer1->batch, img_h*img_w*img_c*layer1->batch);
     
     // conv2
     printf("conv2:    ");
-    add_convolutional_layer(network, 2, 64, 3, 1, 1, img_h, img_w, img_c, batch);
-        
-    img_h = network->layers[2]->out_h;
-    img_w = network->layers[2]->out_w;
-    img_c = network->layers[2]->out_c;
+    add_convolutional_layer(network, 2, 64, 3, 1, 1, network->layers[1]->out_h, network->layers[1]->out_w, network->layers[1]->out_w, batch);
     
     //pool2
     printf("pool2:    ");
+    add_pooling_layer(network, 3, 2, 2, 1, MAXPOOL, network->layers[2]->out_h, network->layers[2]->out_w, network->layers[2]->out_c, batch);
+    /*
     size    = 2;
     stride  = 2;
     padding = 1;
@@ -146,10 +94,13 @@ int main (int argc, char **argv) {
     layer3->delta   = (float *)malloc(layer3->batch*layer3->outputs*sizeof(float));
     
     network->layers[3] = layer3;
-    
+     */
     img_h = 1;
     img_w = 1;
-    img_c = layer3->out_h*layer3->out_w*layer3->out_c;
+    img_c = network->layers[3]->out_h*network->layers[3]->out_w*network->layers[3]->out_c;
+    
+    int n;
+    float scale;
     
     //connect1
     printf("connect1: ");

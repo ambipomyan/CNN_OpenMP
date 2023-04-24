@@ -393,3 +393,32 @@ void add_convolutional_layer(NETWORK *network, int id, int n, int size, int stri
         network->layers0 = layers0;
     }
 }
+
+void add_pooling_layer(NETWORK *network, int id, int size, int stride, int padding, LAYER_TYPE layer_type, int img_h, int img_w, int img_c, int batch) {
+    printf("h: %d, w: %d, c: %d, ", img_h, img_w, img_c);
+    printf("filter size: %d, stride: %d, padding: %d\n", size, stride, padding);
+    
+    LAYER *layer1;
+    layer1 = (LAYER *)malloc(sizeof(LAYER));
+    layer1->layer_type = layer_type;
+    
+    layer1->batch   = batch;
+    layer1->h       = img_h;
+    layer1->w       = img_w;
+    layer1->c       = img_c;
+    layer1->size    = size;
+    layer1->stride  = stride;
+    layer1->padding = padding;
+    
+    layer1->out_h   = (layer1->h+2*layer1->padding)/layer1->stride;
+    layer1->out_w   = (layer1->w+2*layer1->padding)/layer1->stride;
+    layer1->out_c   = layer1->c;
+    layer1->outputs = layer1->out_h*layer1->out_w*layer1->out_c;
+    layer1->inputs  = layer1->w*layer1->h*layer1->c;
+
+    layer1->indexes = (int   *)malloc(layer1->batch*layer1->outputs*sizeof(int));
+    layer1->output  = (float *)malloc(layer1->batch*layer1->outputs*sizeof(float));
+    layer1->delta   = (float *)malloc(layer1->batch*layer1->outputs*sizeof(float));
+    
+    network->layers[id] = layer1;
+}

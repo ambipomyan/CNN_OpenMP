@@ -26,4 +26,6 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
 
 NETWORK *load_network(int n_layers, int img_h, int img_w, int img_c, int n_classes, int batch);
 
-void add_convolutional_layer(NETWORK *network, int id, int n, int size, int stride, int padding, int img_h, int img_w, int img_c, int batch);
+void add_convolutional_layer(NETWORK *network, int id, int n, int size, int stride, int padding,                        int img_h, int img_w, int img_c, int batch);
+
+void add_pooling_layer(      NETWORK *network, int id,        int size, int stride, int padding, LAYER_TYPE layer_type, int img_h, int img_w, int img_c, int batch);
