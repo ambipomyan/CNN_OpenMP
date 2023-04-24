@@ -19,3 +19,5 @@ void backward_connected_layer(    LAYER *layer, LAYER *layer_, float *delta_in, 
 void backward_pooling_layer(      LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev);
 
 void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, float *delta_out, int Op, int dev_id, int num_dev);
+
+NETWORK *load_network(int n_layers, int img_h, int img_w, int img_c, int n_classes, int batch);

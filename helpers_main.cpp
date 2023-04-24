@@ -263,3 +263,24 @@ void backward_convolutional_layer(LAYER *layer, LAYER *layer_, float *delta_in, 
     }
 
 }
+
+//
+NETWORK *load_network(int n_layers, int img_h, int img_w, int img_c, int n_classes, int batch) {
+    NETWORK *network = (NETWORK *)malloc(sizeof(NETWORK));
+    
+    network->n      = n_layers;
+    network->layers = (LAYER **)malloc(n_layers*sizeof(LAYER *));
+    network->layers0= (LAYER *)malloc(sizeof(LAYER *));
+    network->cost   = 0;
+    
+    network->h = img_h;
+    network->w = img_w;
+    network->c = img_c;
+    
+    network->input  = (float *)malloc(network->h*network->w*network->c*batch*sizeof(float));
+    network->truth  = (float *)malloc(n_classes*batch*sizeof(float));
+    network->output = (float *)malloc(n_classes*batch*sizeof(float));
+    
+    return network;
+}
+

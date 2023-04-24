@@ -49,20 +49,7 @@ int main (int argc, char **argv) {
     // load network
     printf("LOAD NETWORK:\n");
     printf("number of layers: %d, number of classes: %d\n", n_layers, n_classes);
-    NETWORK *network;
-    network         = (NETWORK *)malloc(sizeof(NETWORK));
-    network->n      = n_layers;
-    network->layers = (LAYER **)malloc(n_layers*sizeof(LAYER *));
-    network->layers0= (LAYER *)malloc(sizeof(LAYER *));
-    network->cost   = 0;
-    
-    network->h = img_h;
-    network->w = img_w;
-    network->c = img_c;
-    
-    network->input  = (float *)malloc(network->h*network->w*network->c*batch*sizeof(float));
-    network->truth  = (float *)malloc(n_classes*batch*sizeof(float));
-    network->output = (float *)malloc(n_classes*batch*sizeof(float));
+    NETWORK *network = load_network(n_layers, img_h, img_w, img_c, n_classes, batch);
     
     // init layers
     // conv1
