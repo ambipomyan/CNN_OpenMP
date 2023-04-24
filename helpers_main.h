@@ -2,6 +2,13 @@
 #include "conv.h"
 #include "connect.h"
 
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+
+using namespace cv;
+
+
 float rand_uniform(float min, float max);
 
 float rand_normal();
@@ -33,3 +40,8 @@ void add_pooling_layer(      NETWORK *network, int id,        int size, int stri
 void add_connected_layer(    NETWORK *network, int id, int l_outputs,                                                   int img_h, int img_w, int img_c, int batch);
 
 void add_softmax_layer(      NETWORK *network, int id, int n_classes,                                                   int img_h, int img_w, int img_c, int batch);
+
+// data
+MATRIX *get_data(  int img_m, int img_n, int img_h, int img_w, int img_c, const char *train_data_path, const char *test_data_path, int n_classes, float mean, float std);
+
+MATRIX *get_labels(int img_m, int img_n, int img_h, int img_w, int img_c, const char *train_data_path, const char *test_data_path, int n_classes);

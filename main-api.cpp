@@ -6,15 +6,9 @@
 #include <float.h>
 #include <dirent.h>
 
-#include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/highgui.hpp"
-
 #include "omp.h"
 
 #include "helpers_main.h"
-
-using namespace cv;
 
 
 int main (int argc, char **argv) {
@@ -80,113 +74,8 @@ int main (int argc, char **argv) {
     printf("training datasets:   ../MNIST/train, %d images\n", img_n);
     printf("predicting datasets: ../MNIST/test,  %d images\n", img_m);
     
-    MATRIX *X, *y;
-    
-    // get file list
-    char img_files[img_n+img_m][64];
-    
-    DIR *d;
-    struct dirent *dir;
-    
-    int count;
-    const char *train_dir[10], *test_dir[10];
-
-    train_dir[0] = "../MNIST/train/0/";
-    train_dir[1] = "../MNIST/train/1/";
-    train_dir[2] = "../MNIST/train/2/";
-    train_dir[3] = "../MNIST/train/3/";
-    train_dir[4] = "../MNIST/train/4/";
-    train_dir[5] = "../MNIST/train/5/";
-    train_dir[6] = "../MNIST/train/6/";
-    train_dir[7] = "../MNIST/train/7/";
-    train_dir[8] = "../MNIST/train/8/";
-    train_dir[9] = "../MNIST/train/9/";
-    
-    test_dir[0]  = "../MNIST/test/0/";
-    test_dir[1]  = "../MNIST/test/1/";
-    test_dir[2]  = "../MNIST/test/2/";
-    test_dir[3]  = "../MNIST/test/3/";
-    test_dir[4]  = "../MNIST/test/4/";
-    test_dir[5]  = "../MNIST/test/5/";
-    test_dir[6]  = "../MNIST/test/6/";
-    test_dir[7]  = "../MNIST/test/7/";
-    test_dir[8]  = "../MNIST/test/8/";
-    test_dir[9]  = "../MNIST/test/9/";
-    
-    X = (MATRIX *)malloc(sizeof(MATRIX));
-    y = (MATRIX *)malloc(sizeof(MATRIX));
-    
-    X->nrows = img_n+img_m;
-    X->ncols = img_h*img_w;
-    X->nchannels = img_c;
-    X->vals = (float *)malloc(X->nrows*X->ncols*X->nchannels*sizeof(float));
-
-    y->nrows = X->nrows;
-    y->ncols = n_classes;
-    y->nchannels = img_c;
-    y->vals = (float *)malloc(y->nrows*y->ncols*y->nchannels*sizeof(float));
-
-    count = 0;
-    
-    // training data
-    for (int i = 0; i < 10; i++) {
-        d = opendir(train_dir[i]); //printf("%s\n", train_dir[i]);
-        while ((dir = readdir(d)) != NULL && count < img_n) {
-            if (strcmp(dir->d_name, "..") != 0 && strcmp(dir->d_name, ".") != 0) {
-                // file list
-		strcpy(img_files[count], train_dir[i]);
-                strcat(img_files[count], dir->d_name);
-		// labels
-		for (int j = 0; j < n_classes; j++) {
-		    if (j == i) {
-		        y->vals[count*n_classes+j] = 1;
-		    } else {
-			y->vals[count*n_classes+j] = 0;
-		    }
-		}
-		count++;
-	    }
-	}
-        closedir(d);
-    }
-
-    //printf("%d\n", count);
-
-    // testing data
-    for (int i = 0; i < 10; i++) {
-        d = opendir(test_dir[i]); //printf("%s\n", test_dir[i]);
-        while ((dir = readdir(d)) != NULL && count < img_n+img_m) {
-	    if (strcmp(dir->d_name, "..") != 0 && strcmp(dir->d_name, ".") != 0) {
-                // file list
-		strcpy(img_files[count], test_dir[i]);
-                strcat(img_files[count], dir->d_name);
-		// labels
-                for (int j = 0; j < n_classes; j++) {
-                    if (j == i) {
-                        y->vals[count*n_classes+j] = 1;
-                    } else {
-                        y->vals[count*n_classes+j] = 0;
-                    }
-                }
-		count++;
-	    }
-	}
-        closedir(d);
-    }
-
-// INPUT    
-    // read images from file: pixels 0-255
-    Mat src;
-    for (int i = 0; i < img_n+img_m; i++) {
-        src = imread(img_files[i], IMREAD_GRAYSCALE); //printf("%s\n", img_files[i]);
-        for (int p = 0; p < img_h; p++) {
-            for (int q = 0; q < img_w; q++) {
-                X->vals[i*img_h*img_w+p*img_w+q] = (float)src.data[p*img_w+q];
-                X->vals[i*img_h*img_w+p*img_w+q] = X->vals[i*img_h*img_w+p*img_w+q]/255; // map to [0,1]
-                X->vals[i*img_h*img_w+p*img_w+q] = (X->vals[i*img_h*img_w+p*img_w+q] - 0.1307)/0.3081; // Norm
-            }
-        }
-    }
+    MATRIX *X = get_data(  img_m, img_n, img_h, img_w, img_c, "../MNIST/train/", "../MNIST/test/", n_classes, 0.1307, 0.3081);
+    MATRIX *y = get_labels(img_m, img_n, img_h, img_w, img_c, "../MNIST/train/", "../MNIST/test/", n_classes);
 
 // TRAIN
     printf("TRAIN NETWORK:\n");
