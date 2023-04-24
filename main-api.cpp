@@ -37,13 +37,11 @@ int main (int argc, char **argv) {
     int img_h = 28;
     int img_w = 28;
     int img_c = 1;
-    //int img_h = 200;
-    //int img_w = 200;
-    //int img_c = 1;
+
     int img_n = training_volume;
     int img_m = predicting_volume;
     int img_total = 70000;
-    //int img_total = 13150;
+
     if (img_n+img_m > img_total) return 0;
     int n_classes = 10; // "0" - "9"
     int n_layers = (1+1)*2+3+1; // conv1->pool1->conv2->pool2->connect1->connect2->connect3->Softmax
@@ -429,16 +427,10 @@ int main (int argc, char **argv) {
     printf("LOAD DATA:\n");
     printf("training datasets:   ../MNIST/train, %d images\n", img_n);
     printf("predicting datasets: ../MNIST/test,  %d images\n", img_m);
-    //printf("training datasets:   ../OpenMP_CNN_DATA/train, %d images\n", img_n);
-    //printf("predicting datasets: ../OpenMP_CNN_DATA/test,  %d images\n", img_m);
 
     img_h = 28;
     img_w = 28;
     img_c = 1;
-    
-    //img_h = 200;
-    //img_w = 200;
-    //img_c = 1;
     
     // get file list
     char img_files[img_n+img_m][64];
@@ -470,30 +462,6 @@ int main (int argc, char **argv) {
     test_dir[7]  = "../MNIST/test/7/";
     test_dir[8]  = "../MNIST/test/8/";
     test_dir[9]  = "../MNIST/test/9/";
-
-    /*
-    train_dir[0] = "../ImageNet/train/0/";
-    train_dir[1] = "../ImageNet/train/1/";
-    train_dir[2] = "../ImageNet/train/2/";
-    train_dir[3] = "../ImageNet/train/3/";
-    train_dir[4] = "../ImageNet/train/4/";
-    train_dir[5] = "../ImageNet/train/5/";
-    train_dir[6] = "../ImageNet/train/6/";
-    train_dir[7] = "../ImageNet/train/7/";
-    train_dir[8] = "../ImageNet/train/8/";
-    train_dir[9] = "../ImageNet/train/9/";
-
-    test_dir[0]  = "../ImageNet/test/0/";
-    test_dir[1]  = "../ImageNet/test/1/";
-    test_dir[2]  = "../ImageNet/test/2/";
-    test_dir[3]  = "../ImageNet/test/3/";
-    test_dir[4]  = "../ImageNet/test/4/";
-    test_dir[5]  = "../ImageNet/test/5/";
-    test_dir[6]  = "../ImageNet/test/6/";
-    test_dir[7]  = "../ImageNet/test/7/";
-    test_dir[8]  = "../ImageNet/test/8/";
-    test_dir[9]  = "../ImageNet/test/9/";
-     */
     
     MATRIX *X, *y;
     X = (MATRIX *)malloc(sizeof(MATRIX));
@@ -556,24 +524,7 @@ int main (int argc, char **argv) {
 	}
         closedir(d);
     }
-/*   
-    printf("check image list:\n");
-    for (int i = 0; i < img_n+img_m; i++) {
-        printf("%s\n", img_files[i]);
-    }
- */
-    // timer
-    double tmp_total_epoch;
-    double tmp, tmp_forward, tmp_backward, tmp_update, tmp_total_batch;
-    
-    double time_total_epoch;
-    double time_io_read, time_io_write;
-    double time_forward, time_backward, time_update, time_total_batch;
-    double time_conv1,   time_conv2,   time_connect1,   time_connect2,   time_connect3,   time_pool1,   time_pool2,   time_softmax;
-    double time_conv1_2, time_conv2_2, time_connect1_2, time_connect2_2, time_connect3_2, time_pool1_2, time_pool2_2, time_softmax_2;
-    double time_conv1_3, time_conv2_3, time_connect1_3, time_connect2_3, time_connect3_3;
 
-    tmp = read_timer_ms();
 
 // INPUT    
     // read images from file: pixels 0-255
@@ -588,33 +539,6 @@ int main (int argc, char **argv) {
             }
         }
     }
-
-    time_io_read = read_timer_ms() - tmp;
-    printf("io_read: %lf\n", time_io_read);
-/*
-    printf("check imgs: \n");
-    for (int i = 0; i < img_n+img_m; i++) {
-        printf("#%d\n", i);
-        for (int j = 0; j < img_h; j++) {
-            for (int k = 0; k < img_w; k++) {
-                printf("%.2f ", X->vals[i*img_h*img_w+j*img_w+k]);
-            }
-            printf("\n");
-        }
-        printf("\n");
-    }
-
- */
-    /*
-    printf("check labels: \n");
-    for (int i = 0; i < img_n+img_m; i++) {
-        printf("#%d\n", i);
-        for (int j = 0; j < n_classes; j++) {
-            printf("%.2f ", y->vals[i*n_classes+j]);
-        }
-        printf("\n");
-    }
-    */
 
 // TRAIN
     printf("TRAIN NETWORK:\n");
@@ -638,37 +562,6 @@ int main (int argc, char **argv) {
     int HWC_connect2_weights = network->layers[5]->inputs*network->layers[5]->outputs;
     int HWC_connect3_weights = network->layers[6]->inputs*network->layers[6]->outputs;
 
-    // insert timer here
-    time_total_epoch = 0.0;
-    
-    time_io_read = 0.0; time_io_write = 0.0; time_forward = 0.0; time_backward = 0.0; time_update = 0.0; time_total_batch = 0.0;
-    
-    time_conv1   = 0.0; time_conv2   = 0.0; time_connect1   = 0.0; time_connect2   = 0.0; time_connect3   = 0.0; time_pool1   = 0.0; time_pool2   = 0.0; time_softmax   = 0.0;
-    time_conv1_2 = 0.0; time_conv2_2 = 0.0; time_connect1_2 = 0.0; time_connect2_2 = 0.0; time_connect3_2 = 0.0; time_pool1_2 = 0.0; time_pool2_2 = 0.0; time_softmax_2 = 0.0;
-    time_conv1_3 = 0.0; time_conv2_3 = 0.0; time_connect1_3 = 0.0; time_connect2_3 = 0.0; time_connect3_3 = 0.0;
-
-/*
-    // get number of devices, teams and threads
-    num_dev = omp_get_num_devices(); // num_dev has been initilized before
-
-#pragma omp parallel for num_threads(num_dev)
-    for (int i = 0; i < num_dev; i++) {
-#pragma omp target device(i)
-{
-        if (omp_is_initial_device()) {
-            printf("Running on host!\n");
-        } else {
-            int nteams   = omp_get_num_teams();
-	    int nthreads = omp_get_num_threads();
-	    printf("Running on device %d with %d teams in total and %d threads in each team!\n", i, nteams, nthreads);
-        }
-}	
-    }
- */
-
-    // loop start
-    tmp_total_epoch = read_timer_ms();
-
     // i am lucky
     for (int i_epoch = 0; i_epoch < training_epoch; i_epoch++) {
         //printf("- EPOCH%d -\n", i_epoch);
@@ -683,240 +576,44 @@ int main (int argc, char **argv) {
 	    int index = i_batch*batch;
 	    
 	    network->input = X->vals+index*X->ncols;
-            network->truth = y->vals+index*y->ncols;
-
-            /*
-            for (int i = 0; i < batch; i++) {
-                for (int j = 0; j < X->ncols; j++) {
-                    if (j%28==0) printf("\n");
-                    printf("%.2f ", network->input[i*X->ncols+j]);
-                }
-                printf("\n");
-            }
-            printf("\n");
-            for (int i = 0; i < batch; i++) {
-                for (int j = 0; j < n_classes; j++) {
-                    printf("%.2f ", network->truth[i*n_classes+j]);
-                }
-                printf("\n");
-            }
-            printf("\n");
-             */
+	    network->truth = y->vals+index*y->ncols;
 
 // BATCH_start
-            tmp_total_batch = read_timer_ms();
-
-	    //printf("- training batch%d  -\n", i_batch);
 
 // FORWARD
-	    tmp_forward = read_timer_ms();
-
-            //printf("- forward  conv1    -\n");
-	    tmp = read_timer_ms();
-            
 	    forward_convolutional_layer(network->layers[0], network->layers[0], network->input, network->layers[0]->output, 1, dev_id, num_dev);
-
-	    time_conv1 += read_timer_ms() - tmp;
-	    printf("conv1    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1);
-
-	    //printf("network->input size: %d\n", network->layers[0]->batch*network->layers[0]->outputs);
-            
-            //printf("- forward  pool1    -\n");
-	    tmp = read_timer_ms();
-	    
 	    forward_pooling_layer(network->layers[0], network->layers[1], network->layers[0]->output, network->layers[1]->output, 1, dev_id, num_dev);
-
-	    time_pool1 += read_timer_ms() - tmp;
-            printf("maxpool1 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool1);
-
-	    /*
-            printf("check imgs: \n");
-            for (int i = 0; i < img_n; i++) {
-                printf("#%d\n", i);
-                for (int j = 0; j < img_h; j++) {
-                    for (int k = 0; k < img_w; k++) {
-                        printf("%d, %.2f ", i*img_h*img_w+j*img_w+k, network->input[i*img_h*img_w+j*img_w+k]);
-                    }
-                    printf("\n");
-                }
-                printf("\n");
-            }
-             */
-            
-            //printf("network->input size: %d\n", network->layers[1]->batch*network->layers[1]->outputs);
-
-            //printf("- forward  conv2    -\n");
-            tmp = read_timer_ms();
-	    
 	    forward_convolutional_layer(network->layers[1], network->layers[2], network->layers[1]->output, network->layers[2]->output, 1, dev_id, num_dev);
-
-	    time_conv2 += read_timer_ms() - tmp;
-            printf("conv2    forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2);
-
-	    //printf("- skip connection   -\n");
-	    // skip-connection
-            //skip_connection(network->layers[2]->batch, M2, N2, network->layers[0]->output, network->layers[2]->output);
-
-            //printf("network->input size: %d\n", network->layers[2]->batch*network->layers[2]->outputs);
-
-	    //printf("- forward  pool2    -\n");
-	    tmp = read_timer_ms();
-	    
-            forward_pooling_layer(network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1, dev_id, num_dev);
-
-            time_pool2 += read_timer_ms() - tmp;
-            printf("maxpool2 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool2);
-
-            //printf("network->input size: %d\n", network->layers[3]->batch*network->layers[3]->outputs);
-            
-            //printf("- forward  connect1 -\n");
-	    tmp = read_timer_ms();
-	    
+	    forward_pooling_layer(network->layers[2], network->layers[3], network->layers[2]->output, network->layers[3]->output, 1, dev_id, num_dev);
 	    forward_connected_layer(network->layers[3], network->layers[4], network->layers[3]->output, network->layers[4]->output, 1, dev_id, num_dev);
-
-	    //printf("network->input size: %d\n", network->layers[4]->batch*network->layers[4]->outputs);
-            
-	    time_connect1 += read_timer_ms() - tmp;
-            printf("connect1 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect1);
-
-            //printf("- forward  connect2 -\n");
-	    tmp = read_timer_ms();
-
-            forward_connected_layer(network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1, dev_id, num_dev);
-	    
-	    //printf("network->input size: %d\n", network->layers[5]->batch*network->layers[5]->outputs);
-            
-	    time_connect2 += read_timer_ms() - tmp;
-            printf("connect2 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect2);
-
-            //printf("- forward  connect3 -\n");
-	    tmp = read_timer_ms();
-
+	    forward_connected_layer(network->layers[4], network->layers[5], network->layers[4]->output, network->layers[5]->output, 1, dev_id, num_dev);
 	    forward_connected_layer(network->layers[5], network->layers[6], network->layers[5]->output, network->layers[6]->output, 0, dev_id, num_dev);
-
-	    time_connect3 += read_timer_ms() - tmp;
-            printf("connect3 forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3);
-
-            //printf("network->input size: %d\n", network->layers[6]->batch*network->layers[6]->outputs);
-
-            //printf("- forward  softmax  -\n");
-	    tmp = read_timer_ms();
-
 	    forward_softmax_layer(network->layers[6], network->layers[7], network->layers[6]->output, network->layers[7]->output, dev_id, num_dev);
-
-	    time_softmax += read_timer_ms() - tmp;
-            printf("softmax  forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax);
-
-	    time_forward += read_timer_ms() - tmp_forward;
-            printf("forward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_forward);
 
 // COST 
             network->cost = compute_loss_function(network->layers[7], network->truth, training_volume, training_epoch);
 
-// BACKWARD
-	    tmp_backward = read_timer_ms();
-
-            //printf("- backward softmax  -\n");
-            // remember to update network->input and network->delta
-            //LAYER *prev = network->layers[i-1];
-            //network->input = prev->output;
-            //network->delta = prev->delta;
-            // if i = 0, network->input = network->layers[0]->output
-            //
-	    tmp = read_timer_ms();
-            
+// BACKWARD 
             backward_softmax_layer(network->layers[7], network->layers[6], network->layers[7]->delta, network->layers[6]->delta, dev_id, num_dev);
-
-	    time_softmax_2 += read_timer_ms() - tmp;
-            printf("softmax  backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_softmax_2);
-	    
-	    //printf("- backward connect3 -\n");
-	    tmp = read_timer_ms();
-
             backward_connected_layer(network->layers[6], network->layers[5], network->layers[6]->delta, network->layers[5]->delta, 0, dev_id, num_dev);
-
-	    time_connect3_2 += read_timer_ms() - tmp;
-            printf("connect3 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3_2);
-
-	    //printf("- backward connect2 -\n");
-	    tmp = read_timer_ms();
-
             backward_connected_layer(network->layers[5], network->layers[4], network->layers[5]->delta, network->layers[4]->delta, 1, dev_id, num_dev);
-
-	    time_connect2_2 += read_timer_ms() - tmp;
-            printf("connect2 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect2_2);
-            
-	    //printf("- backward connect1 -\n");
-	    tmp = read_timer_ms();
-
             backward_connected_layer(network->layers[4], network->layers[3], network->layers[4]->delta, network->layers[3]->delta, 1, dev_id, num_dev);
-
-            time_connect1_2 += read_timer_ms() - tmp;
-            printf("connect1 backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect1_2);
-
-	    //printf("- backward pool2    -\n");
-	    tmp = read_timer_ms();
-            
-	    backward_pooling_layer(network->layers[3], network->layers[2], network->layers[3]->delta, network->layers[2]->delta, 1, dev_id, num_dev);
-
-	    time_pool2_2 += read_timer_ms() - tmp;
-            printf("pool2    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool2_2);
- 
-	    //printf("- backward conv2    -\n");
-	    tmp = read_timer_ms();
-
+            backward_pooling_layer(network->layers[3], network->layers[2], network->layers[3]->delta, network->layers[2]->delta, 1, dev_id, num_dev);
             backward_convolutional_layer(network->layers[2], network->layers[1], network->layers[2]->delta, network->layers[1]->delta, 1, dev_id, num_dev);
-
-	    time_conv2_2 += read_timer_ms() - tmp;
-            printf("conv2    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2_2);
-
-            //printf("- backward pool1    -\n");
-	    tmp = read_timer_ms();
-
-	    backward_pooling_layer(network->layers[1], network->layers[0], network->layers[1]->delta, network->layers[0]->delta, 1, dev_id, num_dev);
-       
-            time_pool1_2 += read_timer_ms() - tmp;
-            printf("pool1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_pool1_2);
-
-            //printf("- backward conv1    -\n");
-            tmp = read_timer_ms();
-
+            backward_pooling_layer(network->layers[1], network->layers[0], network->layers[1]->delta, network->layers[0]->delta, 1, dev_id, num_dev);
             backward_convolutional_layer(network->layers[0], network->layers0, network->layers[0]->delta, network->layers0->delta, 1, dev_id, num_dev);
-
-	    time_conv1_2 += read_timer_ms() - tmp;
-            printf("conv1    backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1_2);
-
-	    time_backward += read_timer_ms() - tmp_backward;
-            printf("backward epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_backward);
             
-// UPDATE
-	    tmp_update = read_timer_ms();
-	    
+// UPDATE   
 	    // update bias and weights
             float p1 = network->learning_rate/network->batch;
             float p2 = -network->decay*network->batch;
             float p3 = network->momentum;
-            
-	    //printf("- update   conv1    -\n");
-	    tmp = read_timer_ms();
 	    
 	    // conv1 update
 	    conv_update(network->layers[0]->n, network->layers[0]->biases, network->layers[0]->bias_updates, network->layers[0]->nweights, network->layers[0]->weights, network->layers[0]->weight_updates, p1, p2, p3);
 
-	    time_conv1_3 += read_timer_ms() - tmp;
-            printf("conv1     update epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv1_3);
-
-	    //printf("- update   conv2    -\n");
-	    tmp = read_timer_ms();
-
     	    // conv2 update
             conv_update(network->layers[2]->n, network->layers[2]->biases, network->layers[2]->bias_updates, network->layers[2]->nweights, network->layers[2]->weights, network->layers[2]->weight_updates, p1, p2, p3);
-            
-	    time_conv2_3 += read_timer_ms() - tmp;
-            printf("conv2     update epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_conv2_3);
-
-            //printf("- update   connect1 -\n");
-            tmp = read_timer_ms();
 
 	    // init
 	    n =  network->layers[4]->inputs*network->layers[4]->outputs;
@@ -924,23 +621,11 @@ int main (int argc, char **argv) {
             // connect1 update
 	    connect_update(network->layers[4]->outputs, network->layers[4]->biases, network->layers[4]->bias_updates, n, network->layers[4]->weights, network->layers[4]->weight_updates, p1, p2, p3);
            
-	    time_connect1_3 += read_timer_ms() - tmp;
-            printf("connect1  update epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect1_3);
- 
-            //printf("- update   connect2 -\n");
-	    tmp = read_timer_ms(); 
-
 	    // init
 	    n =  network->layers[5]->inputs*network->layers[5]->outputs;
 
 	    // connect2 update
             connect_update(network->layers[5]->outputs, network->layers[5]->biases, network->layers[5]->bias_updates, n, network->layers[5]->weights, network->layers[5]->weight_updates, p1, p2, p3);
-            
-            time_connect2_3 += read_timer_ms() - tmp;
-            printf("connect2  update epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect2_3);
-
-            //printf("- update   connect3 -\n");
-            tmp = read_timer_ms();
             
 	    // init
 	    n =  network->layers[6]->inputs*network->layers[6]->outputs;
@@ -948,27 +633,13 @@ int main (int argc, char **argv) {
 	    // connect3 update
             connect_update(network->layers[6]->outputs, network->layers[6]->biases, network->layers[6]->bias_updates, n, network->layers[6]->weights, network->layers[6]->weight_updates, p1, p2, p3);
 
-	    time_connect3_3 += read_timer_ms() - tmp;
-            printf("connect3  update epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_connect3_3);
-
-	    time_update += read_timer_ms() - tmp_update;
-            printf("update epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_update);
-
-            time_total_batch += read_timer_ms() - tmp_total_batch;
-            printf("total_batch epoch# %d batch# %d device# %d: %lf\n", i_epoch, i_batch, dev_id, time_total_batch);
-
         }
 
         printf("error = %f\n", network->cost);
       } 
     }
 
-    time_total_epoch = read_timer_ms() - tmp_total_epoch;
-    printf("total_epoch: %lf\n", time_total_epoch);
-
-// OUTPUT    
-    tmp = read_timer_ms();
-
+// OUTPUT
     // write weights to file
     int i;
     FILE *f;
@@ -978,9 +649,6 @@ int main (int argc, char **argv) {
     for (i = 0; i < HWC_connect1_weights; i++) fprintf(f, "%lf ", network->layers[4]->weights[i]);
     for (i = 0; i < HWC_connect2_weights; i++) fprintf(f, "%lf ", network->layers[5]->weights[i]);
     for (i = 0; i < HWC_connect3_weights; i++) fprintf(f, "%lf ", network->layers[6]->weights[i]);
-    
-    time_io_write = read_timer_ms() - tmp_update;
-    printf("io_write: %lf\n", time_io_write);
 
 // INFER
     printf("INFER NETWORK:\n");
